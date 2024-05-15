@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.abc.aftersale.mapper.UserMapper">
+    <select id="searchByLoginName" resultType="com.abc.aftersale.entity.User">
+        select *
+        from user
+        where login_name = #{loginName} and status = 1
+    </select>
+
+    <select id="searchMichatIds" resultType="com.abc.aftersale.entity.User">
+        select michat_id
+        from user
+        where status = 1
+    </select>
+</mapper>
