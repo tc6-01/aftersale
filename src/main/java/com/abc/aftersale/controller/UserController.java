@@ -1,8 +1,9 @@
 package com.abc.aftersale.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.abc.aftersale.common.AuthAccess;
 import com.abc.aftersale.common.Result;
-import com.abc.aftersale.entity.User;
+import com.abc.aftersale.dto.UserDTO;
 import com.abc.aftersale.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,21 +21,23 @@ public class UserController {
     @Autowired
     UserServiceImpl userServiceImpl;
 
+    @AuthAccess
     @PostMapping("/login")
-    public Result login(@RequestBody User user) {
-        if (StrUtil.isBlank(user.getLoginName()) || StrUtil.isBlank(user.getPassword())) {
+    public Result login(@RequestBody UserDTO userDTO) {
+        if (StrUtil.isBlank(userDTO.getLoginName()) || StrUtil.isBlank(userDTO.getPassword())) {
             return Result.error("用户名或密码输入非法!");
         }
-        user = userServiceImpl.loginService(user);
-        return Result.success(user);
+        userDTO = userServiceImpl.loginService(userDTO);
+        return Result.success(userDTO);
     }
 
+    @AuthAccess
     @PostMapping("/register")
-    public Result register(@RequestBody User user) {
-        if (StrUtil.isBlank(user.getLoginName()) || StrUtil.isBlank(user.getPassword())) {
+    public Result register(@RequestBody UserDTO userDTO) {
+        if (StrUtil.isBlank(userDTO.getLoginName()) || StrUtil.isBlank(userDTO.getPassword())) {
             return Result.error("用户名或密码输入非法!");
         }
-        user = userServiceImpl.registerService(user);
-        return Result.success(user);
+        userDTO = userServiceImpl.registerService(userDTO);
+        return Result.success(userDTO);
     }
 }

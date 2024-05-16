@@ -1,6 +1,6 @@
 package com.abc.aftersale.service;
 
-import com.abc.aftersale.entity.User;
+import com.abc.aftersale.dto.UserDTO;
 
 /**
  * @version 1.0
@@ -9,7 +9,7 @@ import com.abc.aftersale.entity.User;
  * @注释
  */
 public interface UserService {
-    public User loginService(User user);
+    public UserDTO loginService(UserDTO userDTO);
 
-    public User registerService(User user);
+    public UserDTO registerService(UserDTO userDTO);
 }

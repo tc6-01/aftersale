@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
  */
 @Component
 public class DateUtil {
+    /**
+     * 获取当前时间戳时间
+     * @return
+     */
     public Timestamp getCurrentTimestamp() {
         LocalDateTime currentTime = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(currentTime);
