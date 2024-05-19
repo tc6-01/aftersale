@@ -61,7 +61,9 @@ public class JwtInterceptor implements HandlerInterceptor {
         try {
             jwtVerifier.verify(token);
         } catch (JWTVerificationException e) {
-            throw new ServiceException("401", "请登录！");
+            System.out.print(e.getMessage());
+            throw new ServiceException(e.getMessage());
+            //throw new ServiceException("401", "请登录！");
         }
         return true;
     }
