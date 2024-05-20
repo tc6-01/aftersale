@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
  * @version 1.0
  * @Author wzh
  * @Date 2024/5/14 23:39
- * @注释
+ * @注释 用户模块功能接口
  */
 @SuppressWarnings({"all"})
 @RestController
