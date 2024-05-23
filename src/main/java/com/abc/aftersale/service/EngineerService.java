@@ -11,7 +11,7 @@ import com.abc.aftersale.dto.OrderDTO;
  */
 public interface EngineerService {
 
-    OrderDTO update(Integer orderId, Integer orderStatus, Integer engineerId);
+    OrderDTO update(Integer orderId, Integer engineerId);
 
     OrderDTO maintenance(Integer orderId, Integer engineerId, Boolean isFaulty, String desc);
 

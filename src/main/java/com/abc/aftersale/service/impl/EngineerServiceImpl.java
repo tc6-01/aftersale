@@ -19,7 +19,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class EngineerServiceImpl implements EngineerService {
 
-    final Integer CLAIM = 3; //确认
+    final Integer USER_CLAIM = 2; //用户确认
+
+    final Integer CLAIM = 3; //工程师确认
 
     final Integer MAINTENANCE = 4; //维修
 
@@ -37,19 +39,17 @@ public class EngineerServiceImpl implements EngineerService {
     InventoryService inventoryService;
 
     @Override
-    public OrderDTO update(Integer orderId, Integer orderStatus, Integer engineerId) {
+    public OrderDTO update(Integer orderId, Integer engineerId) {
         Order dbOrder = orderMapper.selectByPrimaryKey(orderId);
 
         if (dbOrder == null) {
             throw new ServiceException("当前工单不存在！");
         }
 
-        // 工单需要处于orderStatus-1对应的状态，
-        // 如果不对应，且处于状态1，需要提醒用户确认工单，如果是其他状态，不允许接单
-        Integer status = orderStatus - 1;
-        if (dbOrder.getStatus().equals(status)){
+
+        if (dbOrder.getStatus().equals(USER_CLAIM)){
             // 修改工单状态，添加工程师信息
-            dbOrder.setStatus(orderStatus);
+            dbOrder.setStatus(CLAIM);
             dbOrder.setEngineerId(engineerId);
 
             orderMapper.updateByPrimaryKeySelective(dbOrder);
@@ -58,10 +58,6 @@ public class EngineerServiceImpl implements EngineerService {
 
             return orderDTO;
         }else{
-            if (dbOrder.getStatus().equals(1)){
-                // 考虑增加推送功能
-                throw new ServiceException("当前工单用户未确认，请通知用户进行确认。");
-            }
             throw new ServiceException("当前工单前置工作未确认，无法修改状态。");
         }
 
@@ -134,8 +130,6 @@ public class EngineerServiceImpl implements EngineerService {
                 dbOrder.setStatus(REINSPECTION);
                 dbOrder.setEngineerId(engineerId);
 
-                // 上传视频
-
                 orderMapper.updateByPrimaryKeySelective(dbOrder);
                 OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
@@ -146,9 +140,6 @@ public class EngineerServiceImpl implements EngineerService {
                 // 修改状态为人工复检中
                 dbOrder.setStatus(REINSPECTION);
                 dbOrder.setEngineerId(engineerId);
-
-                // 上传视频
-
 
                 orderMapper.updateByPrimaryKeySelective(dbOrder);
                 OrderDTO orderDTO = new OrderDTO();
