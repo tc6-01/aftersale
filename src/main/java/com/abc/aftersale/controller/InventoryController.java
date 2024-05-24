@@ -4,7 +4,6 @@ import com.abc.aftersale.common.Result;
 
 import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.entity.Inventory;
-import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

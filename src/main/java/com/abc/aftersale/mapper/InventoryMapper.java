@@ -1,11 +1,16 @@
 package com.abc.aftersale.mapper;
 
 import com.abc.aftersale.entity.Inventory;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface InventoryMapper {
+@Repository
+@Mapper
+public interface InventoryMapper extends BaseMapper<Inventory> {
 
     int deleteByPrimaryKey(Integer id);
 

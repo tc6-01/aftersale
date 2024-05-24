@@ -1,7 +1,6 @@
 package com.abc.aftersale.service;
 
 import com.abc.aftersale.dto.InventoryDTO;
-
 import com.abc.aftersale.dto.OrderDTO;
 
 import java.util.List;
@@ -21,7 +20,7 @@ public interface OrderService {
 
     OrderDTO processDetails(OrderDTO orderDTO);
 
-    OrderDTO orderAccept(Integer orderId, Integer engineerId);
+    OrderDTO accept(Integer orderId, Integer engineerId);
 
     OrderDTO maintenance(Integer orderId, Integer engineerId, Boolean isFaulty, String desc);
 

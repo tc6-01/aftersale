@@ -2,7 +2,6 @@ package com.abc.aftersale.controller;
 
 import com.abc.aftersale.common.Result;
 import com.abc.aftersale.dto.InventoryDTO;
-import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.entity.File;
 import com.abc.aftersale.exception.ServiceException;
@@ -28,7 +27,6 @@ public class OrderController {
 
     @Autowired
     FileServiceImpl fileService;
-
 
     @PostMapping("/create")
     public Result create(@RequestBody OrderDTO orderDTO) {
@@ -67,10 +65,10 @@ public class OrderController {
      工程师修改工单状态
      工单状态变更："用户已确认--2" ----> "工程师已接单--3"
      */
-    @PutMapping("/orderAccept")
-    public Result orderAccept(@RequestParam("orderId") Integer orderId,
+    @PutMapping("/accept")
+    public Result accept(@RequestParam("orderId") Integer orderId,
                          @RequestParam("engineerId") Integer engineerId){
-        OrderDTO orderDTO = orderService.orderAccept(orderId, engineerId);
+        OrderDTO orderDTO = orderService.accept(orderId, engineerId);
         return Result.success(orderDTO);
     }
 
@@ -97,7 +95,7 @@ public class OrderController {
     @PutMapping("/materialApplication")
     public Result materialApplication(@RequestParam("orderId") Integer orderId,
                                       @RequestParam("engineerId") Integer engineerId,
-                                      @RequestParam("isFaulty") Boolean isMaterial,
+                                      @RequestParam("isMaterial") Boolean isMaterial,
                                       @RequestBody InventoryDTO inventoryDTO){
         OrderDTO orderDTO = orderService.apply(orderId, engineerId, isMaterial, inventoryDTO);
         return Result.success(orderDTO);

@@ -2,7 +2,6 @@ package com.abc.aftersale.service.impl;
 
 import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.entity.Inventory;
-import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.entity.User;
 import com.abc.aftersale.exception.ServiceException;
 import com.abc.aftersale.mapper.InventoryMapper;
