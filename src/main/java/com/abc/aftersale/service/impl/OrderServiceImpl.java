@@ -1,5 +1,6 @@
 package com.abc.aftersale.service.impl;
 
+import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.entity.File;
 import com.abc.aftersale.entity.Order;
@@ -8,6 +9,7 @@ import com.abc.aftersale.exception.ServiceException;
 import com.abc.aftersale.mapper.FileMapper;
 import com.abc.aftersale.mapper.OrderMapper;
 import com.abc.aftersale.mapper.UserMapper;
+import com.abc.aftersale.service.InventoryService;
 import com.abc.aftersale.service.OrderService;
 import com.abc.aftersale.utils.DateUtil;
 import com.abc.aftersale.utils.FileUtils;
@@ -31,6 +33,16 @@ import java.util.Objects;
 @Service
 public class OrderServiceImpl implements OrderService {
 
+    final Integer USER_CLAIM = 2; //用户确认
+
+    final Integer CLAIM = 3; //工程师确认
+
+    final Integer MAINTENANCE = 4; //维修
+
+    final Integer REINSPECTION = 5; //复检
+
+    final Integer RETURNUSER = 7; //复检
+
     @Autowired
     OrderMapper orderMapper;
 
@@ -48,6 +60,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     FileUtils fileUtils;
+
+    @Autowired
+    InventoryService inventoryService;
 
     @Override
     public OrderDTO create(OrderDTO orderDTO) {
@@ -81,21 +96,70 @@ public class OrderServiceImpl implements OrderService {
             // 用户查询操作
             queryWrapper.eq(orderDTO.getUserId() != null, "user_id", orderDTO.getUserId())
                     .eq(orderDTO.getStatus() != null, "status", orderDTO.getStatus());
-             Page<Order> orderPage = orderMapper.selectPage(page, queryWrapper);
-             List<OrderDTO> orderDTOList = new ArrayList<>();
-             Long totalNum = Long.valueOf(orderMapper.selectList(queryWrapper).size());
-             for (Order order: orderPage.getRecords()) {
+            Page<Order> orderPage = orderMapper.selectPage(page, queryWrapper);
+            List<OrderDTO> orderDTOList = new ArrayList<>();
+            Long totalNum = Long.valueOf(orderMapper.selectList(queryWrapper).size());
+            for (Order order: orderPage.getRecords()) {
                  OrderDTO result = new OrderDTO();
                  BeanUtils.copyProperties(order, result);
                  result.setPageNum(orderDTO.getPageNum());
                  result.setPageSize(orderDTO.getPageSize());
                  result.setTotalNum(totalNum);
                  orderDTOList.add(result);
-             }
-             return orderDTOList;
+            }
+            return orderDTOList;
         } else if (dbUser.getIdentity().equals(1)) {
             // 工程师查询操作
-            return null;
+            List<OrderDTO> orderDTOList = new ArrayList<>();
+            if (orderDTO.getStatus() != null) {
+                // 根据工单状态查询
+                if (orderDTO.getStatus() <= 2) {
+                    queryWrapper.eq(orderDTO.getStatus() != null, "status", orderDTO.getStatus());
+                } else {
+                    queryWrapper.eq(orderDTO.getUserId() != null, "engineer_id", orderDTO.getUserId())
+                            .eq(orderDTO.getStatus() != null, "status", orderDTO.getStatus());
+                }
+                Page<Order> orderPage = orderMapper.selectPage(page, queryWrapper);
+                Long totalNum = Long.valueOf(orderMapper.selectList(queryWrapper).size());
+                for (Order order: orderPage.getRecords()) {
+                    OrderDTO result = new OrderDTO();
+                    BeanUtils.copyProperties(order, result);
+                    result.setPageNum(orderDTO.getPageNum());
+                    result.setPageSize(orderDTO.getPageSize());
+                    result.setTotalNum(totalNum);
+                    orderDTOList.add(result);
+                }
+                return orderDTOList;
+            } else {
+                // 查询已取消，已创建，已确认，以及该工程师认领的工单，目前分两次查询，待改进
+                queryWrapper.le("status", 2);
+                Long totalNum = 0L;
+                Page<Order> orderPage = orderMapper.selectPage(page, queryWrapper);
+                totalNum += Long.valueOf(orderMapper.selectList(queryWrapper).size());
+                Page<Order> pageTwo = new Page<>(orderDTO.getPageNum(), orderDTO.getPageSize());
+                QueryWrapper<Order> queryWrapperTwo = new QueryWrapper<>();
+                queryWrapperTwo.eq(orderDTO.getUserId() != null, "engineer_id", orderDTO.getUserId())
+                        .gt("status", 2);
+                totalNum += Long.valueOf(orderMapper.selectList(queryWrapperTwo).size());
+                Page<Order> orderPageTwo = orderMapper.selectPage(pageTwo, queryWrapperTwo);
+                for (Order order: orderPage.getRecords()) {
+                    OrderDTO result = new OrderDTO();
+                    BeanUtils.copyProperties(order, result);
+                    result.setPageNum(orderDTO.getPageNum());
+                    result.setPageSize(orderDTO.getPageSize());
+                    result.setTotalNum(totalNum);
+                    orderDTOList.add(result);
+                }
+                for (Order order: orderPageTwo.getRecords()) {
+                    OrderDTO result = new OrderDTO();
+                    BeanUtils.copyProperties(order, result);
+                    result.setPageNum(orderDTO.getPageNum());
+                    result.setPageSize(orderDTO.getPageSize());
+                    result.setTotalNum(totalNum);
+                    orderDTOList.add(result);
+                }
+                return orderDTOList;
+            }
         }
         return null;
     }
@@ -145,5 +209,117 @@ public class OrderServiceImpl implements OrderService {
         }
         orderDTO.setImageFileList(imageFileList);
         return orderDTO;
+    }
+
+    @Override
+    public OrderDTO accept(Integer orderId, Integer engineerId) {
+        Order dbOrder = orderMapper.selectByPrimaryKey(orderId);
+
+        if (dbOrder == null) {
+            throw new ServiceException("当前工单不存在！");
+        }
+
+
+        if (dbOrder.getStatus().equals(USER_CLAIM)){
+            // 修改工单状态，添加工程师信息
+            dbOrder.setStatus(CLAIM);
+            dbOrder.setEngineerId(engineerId);
+
+            orderMapper.updateByPrimaryKeySelective(dbOrder);
+            OrderDTO orderDTO = new OrderDTO();
+            BeanUtils.copyProperties(dbOrder, orderDTO);
+
+            return orderDTO;
+        }else{
+            throw new ServiceException("当前工单前置工作未确认，无法修改状态。");
+        }
+    }
+
+    /*
+    人工检修
+    状态变更："工程师已接单--3" ----> "设备维修中--4"
+            "工程师已接单--3" ----> "返还待确认--7"
+     */
+    @Override
+    public OrderDTO maintenance(Integer orderId, Integer engineerId, Boolean isFaulty, String desc) {
+        Order dbOrder = orderMapper.selectByPrimaryKey(orderId);
+        if (dbOrder == null) {
+            throw new ServiceException("当前工单不存在！");
+        }
+        if (dbOrder.getStatus().equals(CLAIM)){
+            if (isFaulty){
+                // 修改工单状态为“设备维修中”，添加维修信息
+                dbOrder.setStatus(MAINTENANCE);
+
+                dbOrder.setEngineerId(engineerId);
+                dbOrder.setEngineerDesc(desc);
+
+                orderMapper.updateByPrimaryKeySelective(dbOrder);
+                OrderDTO orderDTO = new OrderDTO();
+                BeanUtils.copyProperties(dbOrder, orderDTO);
+
+                return orderDTO;
+            }else {
+                // 返还待确认
+                dbOrder.setStatus(RETURNUSER);
+
+                dbOrder.setEngineerId(engineerId);
+                // 没有进行维修，需要返还理由
+                dbOrder.setEngineerDesc(desc);
+
+                orderMapper.updateByPrimaryKeySelective(dbOrder);
+                OrderDTO orderDTO = new OrderDTO();
+                BeanUtils.copyProperties(dbOrder, orderDTO);
+
+                return orderDTO;
+            }
+        }else{
+            throw new ServiceException("当前工单工程师未认领，无法修改状态。");
+        }
+
+    }
+
+    /*
+    申请物料
+    状态变更：'设备维修中--4"  ----> "人工复检中--5"
+    申请物料暂时由工程师直接进行物料表的增减
+     */
+    @Override
+    public OrderDTO apply(Integer orderId, Integer engineerId, Boolean isMaterial, InventoryDTO inventoryDTO) {
+        Order dbOrder = orderMapper.selectByPrimaryKey(orderId);
+        if (dbOrder == null) {
+            throw new ServiceException("当前工单不存在！");
+        }
+        if (dbOrder.getStatus().equals(MAINTENANCE)){
+            if (isMaterial){
+                // 申请物料
+                Integer num = -inventoryDTO.getInventoryNumber();
+                inventoryDTO.setInventoryNumber(num);
+                inventoryService.addInventory(engineerId, inventoryDTO);
+
+                // 修改状态为人工复检中
+                dbOrder.setStatus(REINSPECTION);
+                dbOrder.setEngineerId(engineerId);
+
+                orderMapper.updateByPrimaryKeySelective(dbOrder);
+                OrderDTO orderDTO = new OrderDTO();
+                BeanUtils.copyProperties(dbOrder, orderDTO);
+
+                return orderDTO;
+
+            }else{
+                // 修改状态为人工复检中
+                dbOrder.setStatus(REINSPECTION);
+                dbOrder.setEngineerId(engineerId);
+
+                orderMapper.updateByPrimaryKeySelective(dbOrder);
+                OrderDTO orderDTO = new OrderDTO();
+                BeanUtils.copyProperties(dbOrder, orderDTO);
+
+                return orderDTO;
+            }
+        }else{
+            throw new ServiceException("当前工单未进行维修确认，申请物料失败。");
+        }
     }
 }
