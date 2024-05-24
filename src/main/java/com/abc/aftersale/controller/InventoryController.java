@@ -2,7 +2,7 @@ package com.abc.aftersale.controller;
 
 import com.abc.aftersale.common.Result;
 
-import com.abc.aftersale.dto.InventoryAddDTO;
+import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.entity.Inventory;
 import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.service.InventoryService;
@@ -23,16 +23,16 @@ public class InventoryController {
     //修改库存，包括修改物料名称，类型，数量，价格
     @PostMapping("/updateInventory")
     public Result updateInventory(@RequestParam("userId") Integer userId,
-                                  @RequestBody InventoryAddDTO inventoryAddDTO){
-        Inventory inventory = inventoryService.updateInventory(userId, inventoryAddDTO);
+                                  @RequestBody InventoryDTO inventoryDTO){
+        Inventory inventory = inventoryService.updateInventory(userId, inventoryDTO);
         return Result.success(inventory);
     }
 
     //添加库存
     @PostMapping("/addInventory")
     public Result addInventory(@RequestParam("userId") Integer userId,
-                               @RequestBody InventoryAddDTO inventoryAddDTO){
-        Inventory inventory = inventoryService.addInventory(userId, inventoryAddDTO);
+                               @RequestBody InventoryDTO inventoryDTO){
+        Inventory inventory = inventoryService.addInventory(userId, inventoryDTO);
         return Result.success(inventory);
     }
 
