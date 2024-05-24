@@ -21,7 +21,7 @@ public class orderPay implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         // 获取流程变量
-        OrderDTO order = (OrderDTO) delegateExecution.getVariable("selfCheckOrder");
+        OrderDTO order = (OrderDTO) delegateExecution.getVariable("returnOrder");
         String payId = (String) delegateExecution.getVariable("payId");
         // 更新order中的自检视频字段
         // 更新流程变量order
@@ -38,7 +38,5 @@ public class orderPay implements JavaDelegate {
 //        {
 //            "status" : Integer  # 是否支付成功（支付ID与费用一致）
 //        }
-        // 更新工单
-        orderService.create(order);
     }
 }

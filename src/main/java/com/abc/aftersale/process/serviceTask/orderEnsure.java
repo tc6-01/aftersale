@@ -24,15 +24,11 @@ public class orderEnsure implements JavaDelegate {
     public void execute(DelegateExecution delegateExecution) throws Exception {
         // 获取流程变量
         OrderDTO order = (OrderDTO) delegateExecution.getVariable("order");
-        List<File> files = (List<File>) delegateExecution.getVariable("files");
-        List<byte[]> fileList = new ArrayList<>();
-        for (File file : files) {
-            fileList.add(file.getFileData());
-        }
+        List<byte[]> fileList = (List<byte[]>) delegateExecution.getVariable("files");
         order.setImageFileList(fileList);
         delegateExecution.setVariable("order",order);
         System.out.println("当前处于工单确认状态，工单详情：" + order.toString());
         // 更新工单
-        orderService.create(order);
+//        orderService.create(order);
     }
 }

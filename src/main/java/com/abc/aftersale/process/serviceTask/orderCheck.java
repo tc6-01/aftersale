@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * 工单待确认状态自动调用系统任务
- * 接收用户上传文件，创建工单
+ * 获取工程师提交检测内容，进行更新工单
  */
 @Service
 public class orderCheck implements JavaDelegate {
@@ -25,13 +25,13 @@ public class orderCheck implements JavaDelegate {
         // 获取流程变量
         OrderDTO order = (OrderDTO) delegateExecution.getVariable("checkingOrder");
         Boolean needMainTain = (Boolean) delegateExecution.getVariable("need_main_tain");
-        // 更新
-        delegateExecution.setVariable("need_main_tain",needMainTain);
         // 更新流程变量order
         delegateExecution.setVariable("order", order);
-        System.out.println("当前处于工单自检状态，工单详情：" + order.toString());
-        System.out.println("当前工单是否需要维修 ：" + needMainTain);
+        System.out.println("=======================当前处于工单自检状态，工单详情：" + order.toString());
+        System.out.println("=======================当前工单是否需要维修 ：" + needMainTain);
+
+        // 进行维修
         // 更新工单
-        orderService.create(order);
+//        orderService.update(order);
     }
 }

@@ -3,6 +3,7 @@ package com.abc.aftersale.process.messageTask;
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.dto.UserDTO;
 import com.abc.aftersale.entity.File;
+import com.abc.aftersale.process.exception.processException;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication;
@@ -10,7 +11,6 @@ import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
-
 @EnableProcessApplication
 public class orderProcess {
     @Resource
@@ -19,6 +19,7 @@ public class orderProcess {
     /**
      * 触发消息任务---Message_user_create
      * @param order 用户输入订单信息
+     * @return 流程ID
      * @desc 用户输入相关工单详情后，通过消息任务开启一个新的流程实例
      */
     public String processUserCreate(OrderDTO order){
@@ -39,22 +40,32 @@ public class orderProcess {
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("enSureOrder", orderDTO);
         paraMap.put("files", pictures);
-        // 第一个是Message reference 第二个是Message Event Id,用于绑定
-        runtimeService.messageEventReceived("Message_user_ensure",executionId, paraMap);
+        try{
+            runtimeService.createMessageCorrelation("Message_user_ensure")
+                    .processInstanceId(executionId)
+                    .setVariables(paraMap).correlateWithResult();
+        }catch (Exception e) {
+            throw new processException("Message_user_ensure流程消息发送异常");
+        }
     }
     /**
      * 触发消息任务---Message_engineer_take
      * @param engineer 工程师对象
      * @param order 工程师接受的工单
-     * @desc 在用户提交工单的工单基础上进一步获取更为详细的工单（上传相应工程师），中间消息任务，通过发送消息直接触发（用户确认工单）
+     * @desc 在用户提交工单的工单基础上进一步获取更为详细的工单（上传相应工程师），中间消息任务，通过发送消息直接触发（工程师检测）
      */
     public void processEngineerTake(UserDTO engineer, OrderDTO order, String executionId){
         // 创建用于发送消息传递参数的Map
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("engineer", engineer);
         paraMap.put("takingOrder", order);
-        // 第一个是Message reference 第二个是Message Event Id
-        runtimeService.messageEventReceived("Message_engineer_take",executionId, paraMap);
+        try{
+            runtimeService.createMessageCorrelation("Message_engineer_take")
+                    .processInstanceId(executionId)
+                    .setVariables(paraMap).correlateWithResult();
+        }catch (Exception e) {
+            throw new processException("Message_engineer_take流程消息发送异常");
+        }
     }
     /**
      * 触发消息任务---Message_engineer_check
@@ -67,8 +78,13 @@ public class orderProcess {
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("need_main_tain", needMainTain);
         paraMap.put("checkingOrder", order);
-        // 第一个是Message reference 第二个是Message Event Id
-        runtimeService.messageEventReceived("Message_engineer_check",executionId, paraMap);
+        try{
+            runtimeService.createMessageCorrelation("Message_engineer_check")
+                    .processInstanceId(executionId)
+                    .setVariables(paraMap).correlateWithResult();
+        }catch (Exception e) {
+            throw new processException("Message_engineer_check流程消息发送异常");
+        }
     }
     /**
      * 触发消息任务---Message_engineer_maintain
@@ -81,8 +97,13 @@ public class orderProcess {
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("need_material", needMaterial);
         paraMap.put("mainTainOrder", order);
-        // 第一个是Message reference 第二个是Message Event Id
-        runtimeService.messageEventReceived("Message_engineer_maintain",executionId, paraMap);
+        try{
+            runtimeService.createMessageCorrelation("Message_engineer_maintain")
+                    .processInstanceId(executionId)
+                    .setVariables(paraMap).correlateWithResult();
+        }catch (Exception e) {
+            throw new processException("Message_engineer_maintain流程消息发送异常");
+        }
     }
     /**
      * 触发消息任务---Message_engineer_selfCheck
@@ -95,8 +116,13 @@ public class orderProcess {
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("video", video);
         paraMap.put("selfCheckOrder", order);
-        // 第一个是Message reference 第二个是Message Event Id
-        runtimeService.messageEventReceived("Message_engineer_selfCheck",executionId, paraMap);
+        try{
+            runtimeService.createMessageCorrelation("Message_engineer_selfCheck")
+                    .processInstanceId(executionId)
+                    .setVariables(paraMap).correlateWithResult();
+        }catch (Exception e) {
+            throw new processException("Message_engineer_selfCheck流程消息发送异常");
+        }
     }
     /**
      * 触发消息任务---Message_pay_success
@@ -109,8 +135,13 @@ public class orderProcess {
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("payId", payId);
         paraMap.put("returnOrder", order);
-        // 第一个是Message reference 第二个是Message Event Id
-        runtimeService.messageEventReceived("Message_pay_success",executionId, paraMap);
+        try{
+            runtimeService.createMessageCorrelation("Message_pay_success")
+                    .processInstanceId(executionId)
+                    .setVariables(paraMap).correlateWithResult();
+        }catch (Exception e) {
+            throw new processException("Message_pay_success流程消息发送异常");
+        }
     }
     /**
      * 触发消息任务---Message_ensure_return
@@ -120,9 +151,14 @@ public class orderProcess {
     public void processEngineerEnsureReturn(OrderDTO order, String executionId){
         // 创建用于发送消息传递参数的Map
         HashMap<String, Object> paraMap = new HashMap<>();
-        paraMap.put("returnOrder", order);
-        // 第一个是Message reference 第二个是Message Event Id
-        runtimeService.messageEventReceived("Message_ensure_return",executionId, paraMap);
+        paraMap.put("returnEdOrder", order);
+        try{
+            runtimeService.createMessageCorrelation("Message_ensure_return")
+                    .processInstanceId(executionId)
+                    .setVariables(paraMap).correlateWithResult();
+        }catch (Exception e) {
+            throw new processException("Message_ensure_return流程消息发送异常");
+        }
     }
 
 }

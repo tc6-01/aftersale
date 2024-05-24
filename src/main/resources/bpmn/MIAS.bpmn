@@ -5,12 +5,7 @@
   </bpmn:collaboration>
   <bpmn:process id="AfterSaleService-four" name="售后工单履约" isExecutable="true">
     <bpmn:laneSet id="LaneSet_1twb537" />
-    <bpmn:exclusiveGateway id="Gateway_1eb0ef3" name="是否需要物料">
-      <bpmn:incoming>Flow_0eodbyl</bpmn:incoming>
-      <bpmn:outgoing>Flow_0jv07rc</bpmn:outgoing>
-      <bpmn:outgoing>Flow_1lwhsoa</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:serviceTask id="Activity_1exfvcz" name="申请物料中" camunda:delegateExpression="${orderMaterialApply}">
+    <bpmn:serviceTask id="Activity_1exfvcz" name="申请物料中" camunda:class="com.abc.aftersale.process.serviceTask.orderMaterialApply">
       <bpmn:incoming>Flow_1lwhsoa</bpmn:incoming>
       <bpmn:outgoing>Flow_1jx4c4j</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -37,11 +32,11 @@
       <bpmn:outgoing>Flow_1raf6e6</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_1s88mi9" messageRef="Message_1l8s5q8" />
     </bpmn:intermediateCatchEvent>
-    <bpmn:serviceTask id="Activity_1e6qyib" name="工单已认领" camunda:delegateExpression="${orderTake}">
+    <bpmn:serviceTask id="Activity_1e6qyib" name="工单已认领" camunda:class="com.abc.aftersale.process.serviceTask.orderTake">
       <bpmn:incoming>Flow_1raf6e6</bpmn:incoming>
       <bpmn:outgoing>Flow_0g19plp</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Activity_0h9ohk1" name="工单已确认" camunda:delegateExpression="${orderEnsure}">
+    <bpmn:serviceTask id="Activity_0h9ohk1" name="工单已确认" camunda:class="com.abc.aftersale.process.serviceTask.orderEnsure">
       <bpmn:incoming>Flow_133e2tm</bpmn:incoming>
       <bpmn:outgoing>Flow_051f8ii</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -50,27 +45,26 @@
       <bpmn:outgoing>Flow_18r5t9l</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0ray4wt" messageRef="Message_0am1ovs" />
     </bpmn:intermediateCatchEvent>
-    <bpmn:serviceTask id="Activity_15r7i9h" name="设备维修中" camunda:delegateExpression="${orderMaintain}">
+    <bpmn:serviceTask id="Activity_15r7i9h" name="设备维修中" camunda:class="com.abc.aftersale.process.serviceTask.orderMaintain">
       <bpmn:incoming>Flow_18r5t9l</bpmn:incoming>
       <bpmn:outgoing>Flow_0eodbyl</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:intermediateCatchEvent id="Event_0qcqdgj" name="等待工程师提交自检视频">
-      <bpmn:incoming>Flow_1jx4c4j</bpmn:incoming>
       <bpmn:incoming>Flow_0jv07rc</bpmn:incoming>
-      <bpmn:incoming>Flow_11gr5q8</bpmn:incoming>
+      <bpmn:incoming>Flow_1jx4c4j</bpmn:incoming>
       <bpmn:outgoing>Flow_0nhlbo2</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0qzznh6" messageRef="Message_2b4kdpn" />
     </bpmn:intermediateCatchEvent>
-    <bpmn:serviceTask id="Activity_0ijhqay" name="人工复检中" camunda:delegateExpression="${orderSelfCheck}">
+    <bpmn:serviceTask id="Activity_0ijhqay" name="人工复检中" camunda:class="com.abc.aftersale.process.serviceTask.orderSelfCheck">
       <bpmn:incoming>Flow_0nhlbo2</bpmn:incoming>
       <bpmn:outgoing>Flow_0ig8su6</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_0eodbyl" sourceRef="Activity_15r7i9h" targetRef="Gateway_1eb0ef3" />
     <bpmn:sequenceFlow id="Flow_0jv07rc" name="不需要物料" sourceRef="Gateway_1eb0ef3" targetRef="Event_0qcqdgj">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${need_material==false}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!need_material}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1lwhsoa" name="需要物料" sourceRef="Gateway_1eb0ef3" targetRef="Activity_1exfvcz">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${need_material==true}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${need_material}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1jx4c4j" sourceRef="Activity_1exfvcz" targetRef="Event_0qcqdgj" />
     <bpmn:sequenceFlow id="Flow_0rzg99j" sourceRef="StartEvent_1" targetRef="Activity_07zruh9" />
@@ -78,11 +72,11 @@
     <bpmn:sequenceFlow id="Flow_133e2tm" sourceRef="Event_1iioocx" targetRef="Activity_0h9ohk1" />
     <bpmn:sequenceFlow id="Flow_0g19plp" sourceRef="Activity_1e6qyib" targetRef="Event_1s0njpi" />
     <bpmn:sequenceFlow id="Flow_0mfgmon" sourceRef="Activity_0p2u3fc" targetRef="Gateway_0fxwyfy" />
-    <bpmn:sequenceFlow id="Flow_11gr5q8" name="不需要维修" sourceRef="Gateway_0fxwyfy" targetRef="Event_0qcqdgj">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!need_maintain}</bpmn:conditionExpression>
+    <bpmn:sequenceFlow id="Flow_11gr5q8" name="不需要维修" sourceRef="Gateway_0fxwyfy" targetRef="Event_0zc869l">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!need_main_tain}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0z82bk9" name="需要维修" sourceRef="Gateway_0fxwyfy" targetRef="Event_12sqlav">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${need_maintain}</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${need_main_tain}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_051f8ii" sourceRef="Activity_0h9ohk1" targetRef="Event_07xd1jj" />
     <bpmn:sequenceFlow id="Flow_1raf6e6" sourceRef="Event_07xd1jj" targetRef="Activity_1e6qyib" />
@@ -92,7 +86,7 @@
     <bpmn:sequenceFlow id="Flow_1ceecbo" sourceRef="Event_0zc869l" targetRef="Activity_0uo3os4" />
     <bpmn:sequenceFlow id="Flow_0nhlbo2" sourceRef="Event_0qcqdgj" targetRef="Activity_0ijhqay" />
     <bpmn:sequenceFlow id="Flow_0ig8su6" sourceRef="Activity_0ijhqay" targetRef="Event_0qq6blt" />
-    <bpmn:serviceTask id="Activity_0p2u3fc" name="人工检测中" camunda:delegateExpression="${orderCheck}">
+    <bpmn:serviceTask id="Activity_0p2u3fc" name="人工检测中" camunda:class="com.abc.aftersale.process.serviceTask.orderCheck">
       <bpmn:incoming>Flow_19q12vp</bpmn:incoming>
       <bpmn:outgoing>Flow_0mfgmon</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -105,17 +99,18 @@
     <bpmn:endEvent id="Event_1w8lm0a" name="业务完成">
       <bpmn:incoming>Flow_0vjfias</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Activity_0uo3os4" name="设备返回待确认" camunda:delegateExpression="${orderEnsureReturn}">
+    <bpmn:serviceTask id="Activity_0uo3os4" name="设备返回待确认" camunda:class="com.abc.aftersale.process.serviceTask.orderEnsureReturn">
       <bpmn:incoming>Flow_1ceecbo</bpmn:incoming>
       <bpmn:outgoing>Flow_0vjfias</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:intermediateCatchEvent id="Event_0zc869l" name="用户/工程师 确认收货">
       <bpmn:incoming>Flow_0k5gheb</bpmn:incoming>
+      <bpmn:incoming>Flow_11gr5q8</bpmn:incoming>
       <bpmn:outgoing>Flow_1ceecbo</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_10ljyq3" messageRef="Message_0gna6va" />
     </bpmn:intermediateCatchEvent>
     <bpmn:sequenceFlow id="Flow_0kxfkj0" sourceRef="Event_0qq6blt" targetRef="Activity_0lep8b0" />
-    <bpmn:serviceTask id="Activity_0lep8b0" name="费用已支付" camunda:delegateExpression="${orderPay}">
+    <bpmn:serviceTask id="Activity_0lep8b0" name="费用已支付" camunda:class="com.abc.aftersale.process.serviceTask.orderPay">
       <bpmn:incoming>Flow_0kxfkj0</bpmn:incoming>
       <bpmn:outgoing>Flow_0k5gheb</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -124,6 +119,11 @@
       <bpmn:outgoing>Flow_0kxfkj0</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0xwnokq" messageRef="Message_1brpv5u" />
     </bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="Gateway_1eb0ef3" name="是否需要物料">
+      <bpmn:incoming>Flow_0eodbyl</bpmn:incoming>
+      <bpmn:outgoing>Flow_0jv07rc</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1lwhsoa</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
   </bpmn:process>
   <bpmn:message id="Message_2kef1e7" name="Message_user_ensure" />
   <bpmn:message id="Message_1nfpo8b" name="Message_user_create" />
@@ -133,17 +133,12 @@
   <bpmn:message id="Message_0gna6va" name="Message_ensure_return" />
   <bpmn:message id="Message_37bctjk" name="Message_engineer_check" />
   <bpmn:message id="Message_1brpv5u" name="Message_pay_success" />
+  <bpmn:message id="Message_05gfh95" name="Message_material_satisfy" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1aw0doh">
       <bpmndi:BPMNShape id="Participant_0mojs9a_di" bpmnElement="Participant_0mojs9a" isHorizontal="true">
         <dc:Bounds x="160" y="80" width="1095" height="550" />
         <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1eb0ef3_di" bpmnElement="Gateway_1eb0ef3" isMarkerVisible="true">
-        <dc:Bounds x="501" y="275" width="50" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="493" y="245" width="67" height="14" />
-        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_110hgbz_di" bpmnElement="Activity_1exfvcz">
         <dc:Bounds x="233" y="260" width="100" height="80" />
@@ -233,31 +228,37 @@
           <dc:Bounds x="588" y="575" width="89" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1eb0ef3_di" bpmnElement="Gateway_1eb0ef3" isMarkerVisible="true">
+        <dc:Bounds x="455" y="275" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="447" y="245" width="67" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0eodbyl_di" bpmnElement="Flow_0eodbyl">
         <di:waypoint x="656" y="300" />
-        <di:waypoint x="551" y="300" />
+        <di:waypoint x="505" y="300" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0jv07rc_di" bpmnElement="Flow_0jv07rc">
-        <di:waypoint x="526" y="325" />
-        <di:waypoint x="526" y="350" />
-        <di:waypoint x="350" y="350" />
+        <di:waypoint x="480" y="325" />
+        <di:waypoint x="480" y="440" />
+        <di:waypoint x="350" y="440" />
         <di:waypoint x="350" y="532" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="345" y="361" width="56" height="14" />
+          <dc:Bounds x="425" y="424" width="56" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1lwhsoa_di" bpmnElement="Flow_1lwhsoa">
-        <di:waypoint x="501" y="300" />
+        <di:waypoint x="455" y="300" />
         <di:waypoint x="333" y="300" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="397" y="282" width="45" height="14" />
+          <dc:Bounds x="373" y="282" width="45" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1jx4c4j_di" bpmnElement="Flow_1jx4c4j">
         <di:waypoint x="283" y="340" />
         <di:waypoint x="283" y="440" />
         <di:waypoint x="350" y="440" />
-        <di:waypoint x="350" y="530" />
+        <di:waypoint x="350" y="532" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0rzg99j_di" bpmnElement="Flow_0rzg99j">
         <di:waypoint x="301" y="157" />
@@ -282,11 +283,11 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_11gr5q8_di" bpmnElement="Flow_11gr5q8">
         <di:waypoint x="1096" y="325" />
-        <di:waypoint x="1096" y="440" />
-        <di:waypoint x="350" y="440" />
-        <di:waypoint x="350" y="532" />
+        <di:waypoint x="1096" y="380" />
+        <di:waypoint x="960" y="380" />
+        <di:waypoint x="960" y="530" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1085" y="381" width="56" height="14" />
+          <dc:Bounds x="942" y="363" width="56" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0z82bk9_di" bpmnElement="Flow_0z82bk9">

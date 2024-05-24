@@ -24,13 +24,13 @@ public class orderTake implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         // 获取流程变量
-        OrderDTO order = (OrderDTO) delegateExecution.getVariable("orderTake");
+        OrderDTO order = (OrderDTO) delegateExecution.getVariable("takingOrder");
         UserDTO engineer = (UserDTO) delegateExecution.getVariable("engineer");
         // 更新关联工程师
         order.setEngineerId(engineer.getId());
         order.setEngineerDesc(engineer.getName());
         delegateExecution.setVariable("order",order);
         // 更新工单（传入数据库）
-        orderService.create(order);
+//        orderService.create(order);
     }
 }

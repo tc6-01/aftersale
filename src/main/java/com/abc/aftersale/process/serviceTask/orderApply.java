@@ -11,7 +11,7 @@ import javax.annotation.Resource;
 
 /**
  * 工单申请状态自动调用系统任务
- * 获取用户工单输入，创建工单对象（并不直接插入，等待后续用户确认后插入）
+ * 获取用户工单输入，(不直接插入，等待后续用户确认后插入）
  */
 @Service
 public class orderApply implements JavaDelegate {
@@ -22,7 +22,7 @@ public class orderApply implements JavaDelegate {
     public void execute(DelegateExecution delegateExecution) throws Exception {
         // 获取用户创建工单输入
         OrderDTO order = (OrderDTO) delegateExecution.getVariable("order");
-        System.out.println("当前处于工单待创建状态，工单详情：" + order.toString());
+        System.out.println("========================当前处于工单待创建状态，工单详情：" + order.toString());
         // 创建流程变量方便后续进行流程查询
         delegateExecution.setVariable("userId", order.getUserId());
         delegateExecution.setVariable("SN", order.getSnInfo());

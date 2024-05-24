@@ -26,6 +26,6 @@ public class orderMaintain implements JavaDelegate {
         System.out.println("当前工单是否需要申请物料: " + needMaterial);
         // 更新流程变量order
         delegateExecution.setVariable("order", order);
-        // 执行相关校验工作……
+        // 执行相关校验工作……更新数据库表
     }
 }
