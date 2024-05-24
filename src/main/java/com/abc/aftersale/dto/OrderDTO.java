@@ -3,6 +3,7 @@ package com.abc.aftersale.dto;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  * @注释
  */
 @Data
-public class OrderDTO extends CommonQueryDTO {
+public class OrderDTO extends CommonQueryDTO implements Serializable {
     public Integer id;
 
     public Integer userId;

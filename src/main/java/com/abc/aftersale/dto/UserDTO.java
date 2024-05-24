@@ -2,6 +2,7 @@ package com.abc.aftersale.dto;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 /**
@@ -11,7 +12,7 @@ import java.sql.Timestamp;
  * @注释 user类数据传输对象
  */
 @Data
-public class UserDTO {
+public class UserDTO implements Serializable {
     public Integer id;
 
     public String loginName;
