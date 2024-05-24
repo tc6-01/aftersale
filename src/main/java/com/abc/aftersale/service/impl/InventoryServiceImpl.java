@@ -1,6 +1,6 @@
 package com.abc.aftersale.service.impl;
 
-import com.abc.aftersale.dto.InventoryAddDTO;
+import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.entity.Inventory;
 import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.entity.User;
@@ -32,12 +32,16 @@ public class InventoryServiceImpl implements InventoryService {
     @Autowired
     UserMapper userMapper;
 
-    /*
-    增加/减少物料
-    权限范围：库管，工程师
+    /**
+     * 增加/减少物料
+ *     权限范围：库管，工程师
+     * @param userId
+     * @param inventoryDTO
+     * @return
      */
+
     @Override
-    public Inventory addInventory(Integer userId, InventoryAddDTO inventoryDTO) {
+    public Inventory addInventory(Integer userId, InventoryDTO inventoryDTO) {
 
         // 身份校验
         User user = userMapper.selectById(userId);
@@ -70,12 +74,15 @@ public class InventoryServiceImpl implements InventoryService {
 
     }
 
-    /*
-    修改库存信息，包括物料名称，物料类别，数量，价格
-    权限范围：库管
+    /**
+     * 修改库存信息，包括物料名称，物料类别，数量，价格
+     * 权限范围：库管
+     * @param userId
+     * @param inventoryDTO
+     * @return
      */
     @Override
-    public Inventory updateInventory(Integer userId, InventoryAddDTO inventoryDTO) {
+    public Inventory updateInventory(Integer userId, InventoryDTO inventoryDTO) {
 
         // 身份校验
         User user = userMapper.selectById(userId);

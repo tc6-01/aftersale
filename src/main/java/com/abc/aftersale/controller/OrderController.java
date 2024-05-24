@@ -1,11 +1,11 @@
 package com.abc.aftersale.controller;
 
 import com.abc.aftersale.common.Result;
-import com.abc.aftersale.dto.InventoryAddDTO;
+import com.abc.aftersale.dto.InventoryDTO;
+import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.entity.File;
 import com.abc.aftersale.exception.ServiceException;
-import com.abc.aftersale.service.EngineerService;
 import com.abc.aftersale.service.impl.FileServiceImpl;
 import com.abc.aftersale.service.impl.OrderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +29,6 @@ public class OrderController {
     @Autowired
     FileServiceImpl fileService;
 
-    @Autowired
-    EngineerService engineerService;
 
     @PostMapping("/create")
     public Result create(@RequestBody OrderDTO orderDTO) {
@@ -69,10 +67,10 @@ public class OrderController {
      工程师修改工单状态
      工单状态变更："用户已确认--2" ----> "工程师已接单--3"
      */
-    @PutMapping("/update")
-    public Result update(@RequestParam("orderId") Integer orderId,
+    @PutMapping("/orderAccept")
+    public Result orderAccept(@RequestParam("orderId") Integer orderId,
                          @RequestParam("engineerId") Integer engineerId){
-        OrderDTO orderDTO = engineerService.update(orderId, engineerId);
+        OrderDTO orderDTO = orderService.orderAccept(orderId, engineerId);
         return Result.success(orderDTO);
     }
 
@@ -88,7 +86,7 @@ public class OrderController {
                               @RequestParam("engineerId") Integer engineerId,
                               @RequestParam("isFaulty") Boolean isFaulty,
                               @RequestParam("desc") String desc){
-        OrderDTO orderDTO = engineerService.maintenance(orderId, engineerId, isFaulty, desc);
+        OrderDTO orderDTO = orderService.maintenance(orderId, engineerId, isFaulty, desc);
         return Result.success(orderDTO);
     }
 
@@ -100,8 +98,8 @@ public class OrderController {
     public Result materialApplication(@RequestParam("orderId") Integer orderId,
                                       @RequestParam("engineerId") Integer engineerId,
                                       @RequestParam("isFaulty") Boolean isMaterial,
-                                      @RequestBody InventoryAddDTO inventoryAddDTO){
-        OrderDTO orderDTO = engineerService.apply(orderId, engineerId, isMaterial, inventoryAddDTO);
+                                      @RequestBody InventoryDTO inventoryDTO){
+        OrderDTO orderDTO = orderService.apply(orderId, engineerId, isMaterial, inventoryDTO);
         return Result.success(orderDTO);
     }
 

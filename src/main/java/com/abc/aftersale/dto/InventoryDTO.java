@@ -10,7 +10,7 @@ import java.util.Date;
  * @create 2024-05-22-16:37
  */
 @Data
-public class InventoryAddDTO {
+public class InventoryDTO {
 
     private Integer id;
 
