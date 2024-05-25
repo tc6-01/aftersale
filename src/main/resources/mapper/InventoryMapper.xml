@@ -84,12 +84,6 @@
         where id = #{id,jdbcType=INTEGER}
     </delete>
 
-    <insert id="insert" parameterType="com.abc.aftersale.entity.Inventory">
-        insert into inventory (inventory_name, inventory_class,
-                               inventory_number, inventory_price)
-        values (#{inventoryName,jdbcType=VARCHAR}, #{inventoryClass,jdbcType=VARCHAR},
-                #{inventoryNumber,jdbcType=INTEGER}, #{inventoryPrice,jdbcType=DECIMAL})
-    </insert>
     <insert id="insertSelective" parameterType="com.abc.aftersale.entity.Inventory">
         insert into inventory
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -216,4 +210,11 @@
             update_time = #{updateTime,jdbcType=TIMESTAMP}
         where id = #{id,jdbcType=INTEGER}
     </update>
+
+    <select id="findByInventoryNameAndClass" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from inventory
+        where inventory_name = #{inventoryName,jdbcType=VARCHAR} AND inventory_class = #{inventoryClass,jdbcType=VARCHAR}
+    </select>
 </mapper>

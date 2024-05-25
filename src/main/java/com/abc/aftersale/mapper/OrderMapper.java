@@ -20,9 +20,6 @@ public interface OrderMapper extends BaseMapper<Order> {
 
     Order selectById(Integer id);
 
-    // updateByPrimaryKey
-    int updateById(Order order);
-
     int deleteByPrimaryKey(Integer id);
 
     int insert(Order record);

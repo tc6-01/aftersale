@@ -83,8 +83,8 @@ public class OrderController {
     public Result maintenance(@RequestParam("orderId") Integer orderId,
                               @RequestParam("engineerId") Integer engineerId,
                               @RequestParam("isFaulty") Boolean isFaulty,
-                              @RequestParam("desc") String desc){
-        OrderDTO orderDTO = orderService.maintenance(orderId, engineerId, isFaulty, desc);
+                              @RequestParam("engineerDesc") String engineerDesc){
+        OrderDTO orderDTO = orderService.maintenance(orderId, engineerId, isFaulty, engineerDesc);
         return Result.success(orderDTO);
     }
 

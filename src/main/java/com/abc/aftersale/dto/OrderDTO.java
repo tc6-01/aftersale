@@ -49,4 +49,6 @@ public class OrderDTO extends CommonQueryDTO implements Serializable {
     public Timestamp updateTime;
 
     public List<byte[]> imageFileList;
+
+    public String engineerName;
 }

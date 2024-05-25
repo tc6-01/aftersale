@@ -208,6 +208,10 @@ public class OrderServiceImpl implements OrderService {
             imageFileList.add(decryptedData);
         }
         orderDTO.setImageFileList(imageFileList);
+        if (orderDTO.getEngineerId() != null) {
+            User engineer = userMapper.selectById(orderDTO.getEngineerId());
+            orderDTO.setEngineerName(engineer.getName());
+        }
         return orderDTO;
     }
 

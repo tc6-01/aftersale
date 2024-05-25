@@ -376,11 +376,4 @@
         from `order`
         where id = #{id,jdbcType=INTEGER};
     </select>
-
-    <update id="updateById" parameterType="com.abc.aftersale.entity.Order">
-        update `order`
-        set user_id = #{userId,jdbcType=INTEGER},
-            user_name = #{userName,jdbcType=VARCHAR},
-            where id = #{id,jdbcType=INTEGER}
-    </update>
 </mapper>

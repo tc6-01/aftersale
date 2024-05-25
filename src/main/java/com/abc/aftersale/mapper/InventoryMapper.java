@@ -12,18 +12,11 @@ import java.util.List;
 @Mapper
 public interface InventoryMapper extends BaseMapper<Inventory> {
 
-    int deleteByPrimaryKey(Integer id);
-
-    int insert(Inventory record);
-
     int insertSelective(Inventory record);
-
 
     Inventory selectByPrimaryKey(Integer id);
 
-
-
     int updateByPrimaryKeySelective(Inventory record);
 
-    int updateByPrimaryKey(Inventory record);
+    Inventory findByInventoryNameAndClass(@Param("inventoryName") String inventoryName, @Param("inventoryClass") String inventoryClass);
 }
