@@ -225,7 +225,7 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public OrderDTO accept(Integer orderId, Integer engineerId) {
-        Order dbOrder = orderMapper.selectByPrimaryKey(orderId);
+        Order dbOrder = orderMapper.selectById(orderId);
 
         if (dbOrder == null) {
             throw new ServiceException("当前工单不存在！");
@@ -237,7 +237,7 @@ public class OrderServiceImpl implements OrderService {
             dbOrder.setStatus(CLAIM);
             dbOrder.setEngineerId(engineerId);
 
-            orderMapper.updateByPrimaryKeySelective(dbOrder);
+            orderMapper.updateById(dbOrder);
             OrderDTO orderDTO = new OrderDTO();
             BeanUtils.copyProperties(dbOrder, orderDTO);
 
@@ -259,7 +259,7 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public OrderDTO maintenance(Integer orderId, Integer engineerId, Boolean isFaulty, String desc) {
-        Order dbOrder = orderMapper.selectByPrimaryKey(orderId);
+        Order dbOrder = orderMapper.selectById(orderId);
         if (dbOrder == null) {
             throw new ServiceException("当前工单不存在！");
         }
@@ -271,7 +271,7 @@ public class OrderServiceImpl implements OrderService {
                 dbOrder.setEngineerId(engineerId);
                 dbOrder.setEngineerDesc(desc);
 
-                orderMapper.updateByPrimaryKeySelective(dbOrder);
+                orderMapper.updateById(dbOrder);
                 OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
 
@@ -284,7 +284,7 @@ public class OrderServiceImpl implements OrderService {
                 // 没有进行维修，需要返还理由
                 dbOrder.setEngineerDesc(desc);
 
-                orderMapper.updateByPrimaryKeySelective(dbOrder);
+                orderMapper.updateById(dbOrder);
                 OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
 
@@ -308,7 +308,7 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public OrderDTO apply(Integer orderId, Integer engineerId, Boolean isMaterial, InventoryDTO inventoryDTO) {
-        Order dbOrder = orderMapper.selectByPrimaryKey(orderId);
+        Order dbOrder = orderMapper.selectById(orderId);
         if (dbOrder == null) {
             throw new ServiceException("当前工单不存在！");
         }
@@ -323,7 +323,7 @@ public class OrderServiceImpl implements OrderService {
                 dbOrder.setStatus(REINSPECTION);
                 dbOrder.setEngineerId(engineerId);
 
-                orderMapper.updateByPrimaryKeySelective(dbOrder);
+                orderMapper.updateById(dbOrder);
                 OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
 
@@ -334,7 +334,7 @@ public class OrderServiceImpl implements OrderService {
                 dbOrder.setStatus(REINSPECTION);
                 dbOrder.setEngineerId(engineerId);
 
-                orderMapper.updateByPrimaryKeySelective(dbOrder);
+                orderMapper.updateById(dbOrder);
                 OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
 
