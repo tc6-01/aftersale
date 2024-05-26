@@ -18,8 +18,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,7 +44,19 @@ public class OrderServiceImpl implements OrderService {
 
     final Integer REINSPECTION = 5; //复检
 
-    final Integer RETURNUSER = 7; //复检
+    final Integer PAY = 6; //复检
+
+    final Integer RETURNUSER = 7; //设备返还
+
+    private final String REDIS_KEY = "key:";
+
+    private final Integer REDIS_EXPIRE = 5 * 60;
+
+    // 手工费
+    private final Integer SERVICE_CHARGES = 50;
+
+    // 物料rate
+    private final String RATE = "1.2";
 
     @Autowired
     OrderMapper orderMapper;
@@ -63,6 +78,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     InventoryService inventoryService;
+
+    @Autowired
+    private Jedis jedis;
 
     @Override
     public OrderDTO create(OrderDTO orderDTO) {
@@ -225,25 +243,41 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public OrderDTO accept(Integer orderId, Integer engineerId) {
-        Order dbOrder = orderMapper.selectById(orderId);
 
-        if (dbOrder == null) {
-            throw new ServiceException("当前工单不存在！");
-        }
+        long isExist = jedis.setnx(REDIS_KEY + orderId, "");
+        if (isExist == 0) {
+
+            jedis.expire(REDIS_KEY + orderId, REDIS_EXPIRE);
+
+            // 更新
+            Order dbOrder = orderMapper.selectById(orderId);
+
+            if (dbOrder == null) {
+                throw new ServiceException("当前工单不存在！");
+            }
 
 
-        if (dbOrder.getStatus().equals(USER_CLAIM)){
-            // 修改工单状态，添加工程师信息
-            dbOrder.setStatus(CLAIM);
-            dbOrder.setEngineerId(engineerId);
+            if (dbOrder.getStatus().equals(USER_CLAIM)){
+                // 修改工单状态，添加工程师信息
+                dbOrder.setStatus(CLAIM);
+                dbOrder.setEngineerId(engineerId);
 
             orderMapper.updateById(dbOrder);
             OrderDTO orderDTO = new OrderDTO();
             BeanUtils.copyProperties(dbOrder, orderDTO);
 
-            return orderDTO;
-        }else{
-            throw new ServiceException("当前工单前置工作未确认，无法修改状态。");
+                jedis.del(REDIS_KEY + orderId);
+
+                return orderDTO;
+            }else{
+                jedis.del(REDIS_KEY + orderId);
+                throw new ServiceException("当前工单前置工作未确认，无法修改状态。");
+            }
+
+
+        } else {
+            // 跳过
+            throw new ServiceException("其他工程师在处理当前订单！");
         }
     }
 
@@ -344,4 +378,50 @@ public class OrderServiceImpl implements OrderService {
             throw new ServiceException("当前工单未进行维修确认，申请物料失败。");
         }
     }
+
+//    @Override
+//    public OrderDTO costPush(Integer orderId, Integer engineerId, Boolean isMaterial, InventoryDTO inventoryDTO) {
+//        Order dbOrder = orderMapper.selectById(orderId);
+//        if (dbOrder == null) {
+//            throw new ServiceException("当前工单不存在！");
+//        }
+//        if (dbOrder.getStatus().equals(REINSPECTION)){
+//            if (isMaterial){
+//                // 计算费用, price * num * 1.2 + 手工费SERVICE_CHARGES
+//                BigDecimal price = inventoryDTO.getInventoryPrice();
+//                BigDecimal num = BigDecimal.valueOf(inventoryDTO.getInventoryNumber());
+//                BigDecimal rate = new BigDecimal(RATE);
+//                BigDecimal fee = price.multiply(num).multiply(rate);
+//                BigDecimal finalPrice = fee.add(new BigDecimal(SERVICE_CHARGES));
+//
+//                dbOrder.setPredCost(finalPrice);
+//
+//                // 修改状态为费用待支付
+//                dbOrder.setStatus(PAY);
+//                dbOrder.setEngineerId(engineerId);
+//
+//                orderMapper.updateById(dbOrder);
+//                OrderDTO orderDTO = new OrderDTO();
+//                BeanUtils.copyProperties(dbOrder, orderDTO);
+//
+//                return orderDTO;
+//
+//            }else{
+//
+//                dbOrder.setPredCost(new BigDecimal(SERVICE_CHARGES));
+//
+//                // 修改状态为费用待支付
+//                dbOrder.setStatus(PAY);
+//                dbOrder.setEngineerId(engineerId);
+//
+//                orderMapper.updateById(dbOrder);
+//                OrderDTO orderDTO = new OrderDTO();
+//                BeanUtils.copyProperties(dbOrder, orderDTO);
+//
+//                return orderDTO;
+//            }
+//        }else{
+//            throw new ServiceException("当前工单未进行复检确认，费用推送失败。");
+//        }
+//    }
 }

@@ -101,5 +101,20 @@ public class OrderController {
         return Result.success(orderDTO);
     }
 
+//    /**
+//     * 费用推送：人工复检通过后，调用费用推送接口，并在工单中写入预估费用
+//     * 费用计算，物料的成本费用*120% + 工程师手工费（固定为50元）
+//     * 工单状态变更："人工复检中--5" ----> "费用待支付--6"
+//     */
+//    @PostMapping("/costPush")
+//    public Result costPush(@RequestParam("orderId") Integer orderId,
+//                           @RequestParam("engineerId") Integer engineerId,
+//                           @RequestParam("isMaterial") Boolean isMaterial,
+//                           @RequestBody InventoryDTO inventoryDTO){
+//        OrderDTO orderDTO = orderService.costPush(orderId, engineerId, isMaterial, inventoryDTO);
+//        return Result.success(orderDTO);
+//    }
+
+
 
 }

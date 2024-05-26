@@ -50,6 +50,10 @@ public class Order {
 
     public BigDecimal realCost;
 
+    public Integer payStatus;
+
+    public String payId;
+
     public Timestamp createTime;
 
     public Timestamp updateTime;
