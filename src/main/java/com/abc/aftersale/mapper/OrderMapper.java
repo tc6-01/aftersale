@@ -18,4 +18,6 @@ import java.util.List;
 @Mapper
 public interface OrderMapper extends BaseMapper<Order> {
 
+    Order selectByPayId(String payOrderId);
+
 }

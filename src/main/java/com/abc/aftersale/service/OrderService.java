@@ -25,4 +25,6 @@ public interface OrderService {
     OrderDTO maintenance(Integer orderId, Integer engineerId, Boolean isFaulty, String desc);
 
     OrderDTO apply(Integer orderId, Integer engineerId, Boolean isMaterial, InventoryDTO inventoryDTO);
+
+//    OrderDTO costPush(Integer orderId, Integer engineerId, Boolean isMaterial, InventoryDTO inventoryDTO);
 }
