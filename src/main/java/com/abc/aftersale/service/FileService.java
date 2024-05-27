@@ -3,6 +3,8 @@ package com.abc.aftersale.service;
 import com.abc.aftersale.entity.File;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * @version 1.0
  * @Author wzh
@@ -10,5 +12,5 @@ import org.springframework.web.multipart.MultipartFile;
  * @注释
  */
 public interface FileService {
-    File upload(MultipartFile file, Integer orderId);
+    List<File> upload(MultipartFile[] files, Integer orderId);
 }

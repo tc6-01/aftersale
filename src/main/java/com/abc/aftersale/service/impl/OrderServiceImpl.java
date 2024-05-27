@@ -3,10 +3,12 @@ package com.abc.aftersale.service.impl;
 import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.entity.File;
+import com.abc.aftersale.entity.Inventory;
 import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.entity.User;
 import com.abc.aftersale.exception.ServiceException;
 import com.abc.aftersale.mapper.FileMapper;
+import com.abc.aftersale.mapper.InventoryMapper;
 import com.abc.aftersale.mapper.OrderMapper;
 import com.abc.aftersale.mapper.UserMapper;
 import com.abc.aftersale.service.InventoryService;
@@ -20,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -51,6 +54,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     FileMapper fileMapper;
+
+    @Autowired
+    InventoryMapper inventoryMapper;
 
     @Autowired
     PhoneNumberValidator phoneNumberValidator;
@@ -212,6 +218,18 @@ public class OrderServiceImpl implements OrderService {
             User engineer = userMapper.selectById(orderDTO.getEngineerId());
             orderDTO.setEngineerName(engineer.getName());
         }
+        // 查找file表中用户上传的故障照片
+        QueryWrapper<File> queryWrapperVideo = new QueryWrapper<>();
+        queryWrapperVideo.eq(orderDTO.getId() != null, "order_id", orderDTO.getId())
+                .eq("file_type", 1);
+        List<File> fileList1 = fileMapper.selectList(queryWrapperVideo);
+        if (fileList1.size() < 1) {
+            orderDTO.setVideoFile(null);
+        } else {
+            byte[] encryptedData = fileList1.get(0).getFileData();
+            byte[] decryptedData = fileUtils.decryptImage(encryptedData);
+            orderDTO.setVideoFile(decryptedData);
+        }
         return orderDTO;
     }
 
@@ -302,38 +320,44 @@ public class OrderServiceImpl implements OrderService {
      * 申请物料暂时由工程师直接进行物料表的增减
      * @param orderId
      * @param engineerId
-     * @param isMaterial 是否需要物料
+     * @param isInventory 是否需要物料
      * @param inventoryDTO 物料增减表单
      * @return
      */
     @Override
-    public OrderDTO apply(Integer orderId, Integer engineerId, Boolean isMaterial, InventoryDTO inventoryDTO) {
+    public OrderDTO apply(Integer orderId, Integer engineerId, Boolean isInventory, InventoryDTO inventoryDTO) {
         Order dbOrder = orderMapper.selectById(orderId);
         if (dbOrder == null) {
             throw new ServiceException("当前工单不存在！");
         }
         if (dbOrder.getStatus().equals(MAINTENANCE)){
-            if (isMaterial){
+            BigDecimal rate = new BigDecimal("1.2");
+            BigDecimal engineerFee = new BigDecimal("50");
+            if (isInventory){
                 // 申请物料
-                Integer num = -inventoryDTO.getInventoryNumber();
-                inventoryDTO.setInventoryNumber(num);
-                inventoryService.addInventory(engineerId, inventoryDTO);
+                Inventory dbInventory = inventoryMapper.selectById(inventoryDTO.getId());
+                Integer number = dbInventory.getInventoryNumber();
+                if (number < 1) {
+                    throw new ServiceException("库存物料不足，请联系网点库管补充物料！");
+                } else {
+                    // 核销物料，物料数量自动减一
+                    dbInventory.setInventoryNumber(number - 1);
+                    inventoryMapper.updateById(dbInventory);
 
-                // 修改状态为人工复检中
-                dbOrder.setStatus(REINSPECTION);
-                dbOrder.setEngineerId(engineerId);
+                    // 修改工单状态为人工复检中
+                    dbOrder.setStatus(REINSPECTION);
+                    BigDecimal predCost = (rate.multiply(dbInventory.getInventoryPrice())).add(engineerFee);
+                    dbOrder.setPredCost(predCost);
+                    orderMapper.updateById(dbOrder);
+                    OrderDTO orderDTO = new OrderDTO();
+                    BeanUtils.copyProperties(dbOrder, orderDTO);
 
-                orderMapper.updateById(dbOrder);
-                OrderDTO orderDTO = new OrderDTO();
-                BeanUtils.copyProperties(dbOrder, orderDTO);
-
-                return orderDTO;
-
+                    return orderDTO;
+                }
             }else{
                 // 修改状态为人工复检中
                 dbOrder.setStatus(REINSPECTION);
-                dbOrder.setEngineerId(engineerId);
-
+                dbOrder.setPredCost(engineerFee);
                 orderMapper.updateById(dbOrder);
                 OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);

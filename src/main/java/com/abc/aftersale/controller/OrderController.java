@@ -47,12 +47,12 @@ public class OrderController {
     }
 
     @PostMapping("/confirm")
-    public Result confirm(@RequestParam("orderId") Integer orderId, @RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
+    public Result confirm(@RequestParam("orderId") Integer orderId, @RequestParam("files") MultipartFile[] files) {
+        if (files.length == 0) {
             throw new ServiceException("上传文件为空！");
         }
-        File dbFile = fileService.upload(file, orderId);
-        return Result.success(dbFile);
+        List<File> dbFiles = fileService.upload(files, orderId);
+        return Result.success(dbFiles);
     }
 
     @PostMapping("/processDetails")
@@ -92,14 +92,22 @@ public class OrderController {
      物料申请：工程师针对有故障的设备，根据检测情况决定是否需要物料申请
      工单状态变更：'设备维修中--4"  ----> "人工复检中--5"
      */
-    @PutMapping("/materialApplication")
+    @PutMapping("/inventoryApplication")
     public Result materialApplication(@RequestParam("orderId") Integer orderId,
                                       @RequestParam("engineerId") Integer engineerId,
-                                      @RequestParam("isMaterial") Boolean isMaterial,
+                                      @RequestParam("isInventory") Boolean isInventory,
                                       @RequestBody InventoryDTO inventoryDTO){
-        OrderDTO orderDTO = orderService.apply(orderId, engineerId, isMaterial, inventoryDTO);
+        OrderDTO orderDTO = orderService.apply(orderId, engineerId, isInventory, inventoryDTO);
         return Result.success(orderDTO);
     }
 
+    @PostMapping("/recheck")
+    public Result recheck(@RequestParam("orderId") Integer orderId, @RequestParam("files") MultipartFile[] files) {
+        if (files.length == 0) {
+            throw new ServiceException("上传文件为空！");
+        }
+        List<File> dbFiles = fileService.upload(files, orderId);
+        return Result.success(dbFiles);
+    }
 
 }

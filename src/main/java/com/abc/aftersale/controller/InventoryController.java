@@ -3,7 +3,6 @@ package com.abc.aftersale.controller;
 import com.abc.aftersale.common.Result;
 
 import com.abc.aftersale.dto.InventoryDTO;
-import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.entity.Inventory;
 import com.abc.aftersale.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
