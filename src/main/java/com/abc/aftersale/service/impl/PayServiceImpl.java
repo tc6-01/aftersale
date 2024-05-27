@@ -1,5 +1,7 @@
 package com.abc.aftersale.service.impl;
 
+import com.abc.aftersale.common.Result;
+import com.abc.aftersale.dto.OrderPayDTO;
 import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.exception.ServiceException;
 import com.abc.aftersale.mapper.OrderMapper;
@@ -125,5 +127,27 @@ public class PayServiceImpl implements PayService {
         }
         throw new ServiceException("异步通知中错误的支付平台");
 
+    }
+
+    /**
+     * 查询支付记录（通过工单号）
+     * @param orderId 工单号
+     * @return
+     */
+    @Override
+    public OrderPayDTO queryByOrderId(Integer orderId) {
+        Order dbOrder = orderMapper.selectById(orderId);
+        OrderPayDTO payDTO = new OrderPayDTO();
+        payDTO.setId(dbOrder.getId());
+        payDTO.setUserId(dbOrder.getUserId());
+        payDTO.setUserName(dbOrder.getUserName());
+        payDTO.setUserPhone(dbOrder.getUserPhone());
+        payDTO.setUserAddress(dbOrder.getUserAddress());
+        payDTO.setProductInfo(dbOrder.getProductInfo());
+        payDTO.setSnInfo(dbOrder.getSnInfo());
+        payDTO.setPredCost(dbOrder.getPredCost());
+        payDTO.setRealCost(dbOrder.getRealCost());
+
+        return payDTO;
     }
 }

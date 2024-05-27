@@ -1,5 +1,7 @@
 package com.abc.aftersale.service;
 
+import com.abc.aftersale.common.Result;
+import com.abc.aftersale.dto.OrderPayDTO;
 import com.lly835.bestpay.enums.BestPayTypeEnum;
 import com.lly835.bestpay.model.PayResponse;
 
@@ -23,4 +25,11 @@ public interface PayService {
      * @param notifyData
      */
     String asyncNotify(String notifyData);
+
+    /**
+     * 查询支付记录（通过工单号）
+     * @param orderId
+     * @return
+     */
+    OrderPayDTO queryByOrderId(Integer orderId);
 }
