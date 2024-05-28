@@ -13,9 +13,11 @@ import com.abc.aftersale.service.InventoryService;
 import com.abc.aftersale.service.OrderService;
 import com.abc.aftersale.utils.DateUtil;
 import com.abc.aftersale.utils.FileUtils;
+import com.abc.aftersale.utils.HttpUtils;
 import com.abc.aftersale.utils.PhoneNumberValidator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.http.HttpResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
@@ -23,9 +25,7 @@ import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @version 1.0
@@ -377,6 +377,41 @@ public class OrderServiceImpl implements OrderService {
         }else{
             throw new ServiceException("当前工单未进行维修确认，申请物料失败。");
         }
+    }
+
+    @Override
+    public void smsSend(String mobile, String templateId, String smsSignId) {
+
+
+        String host = "https://gyytz.market.alicloudapi.com";
+        String path = "/sms/smsSend";
+        String method = "POST";
+        String appcode = "200d16ddf8c54fd0b1a73255caec3d9b";
+        Map<String, String> headers = new HashMap<String, String>();
+        //最后在header中的格式(中间是英文空格)为Authorization:APPCODE 83359fd73fe94948385f570e3c139105
+        headers.put("Authorization", "APPCODE " + appcode);
+        Map<String, String> querys = new HashMap<String, String>();
+        querys.put("mobile", mobile);
+        querys.put("param", "");
+
+//smsSignId（短信前缀）和templateId（短信模板），可登录国阳云控制台自助申请。参考文档：http://help.guoyangyun.com/Problem/Qm.html
+
+        // 由于没有资质，smsSignId和templateId暂时不设置
+        querys.put("smsSignId", "2e65b1bb3d054466b82f0c9d125465e2");
+        querys.put("templateId", "908e94ccf08b4476ba6c876d13f084ad");
+        Map<String, String> bodys = new HashMap<String, String>();
+
+
+        try {
+            HttpResponse response = HttpUtils.doPost(host, path, method, headers, querys, bodys);
+            System.out.println(response.toString());
+            //获取response的body
+            //System.out.println(EntityUtils.toString(response.getEntity()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 
 //    @Override

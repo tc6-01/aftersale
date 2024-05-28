@@ -27,4 +27,6 @@ public interface OrderService {
     OrderDTO apply(Integer orderId, Integer engineerId, Boolean isMaterial, InventoryDTO inventoryDTO);
 
 //    OrderDTO costPush(Integer orderId, Integer engineerId, Boolean isMaterial, InventoryDTO inventoryDTO);
+
+    void smsSend(String mobile, String templateId, String smsSignId);
 }
