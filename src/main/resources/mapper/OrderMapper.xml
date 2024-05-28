@@ -1,28 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.abc.aftersale.mapper.OrderMapper">
+
     <select id="selectByPayId" resultType="com.abc.aftersale.entity.Order">
         select *
         from `order`
         where pay_id = #{payId,jdbcType=VARCHAR}
     </select>
-    <update id="updateByOrder" parameterType="com.abc.aftersale.entity.Order">
-        update order
-        set user_id = #{userId,jdbcType=INTEGER},
-        user_name = #{userName,jdbcType=VARCHAR},
-        user_phone = #{userPhone,jdbcType=VARCHAR},
-        user_address = #{userAddress,jdbcType=VARCHAR},
-        product_info = #{productInfo,jdbcType=VARCHAR},
-        sn_info = #{snInfo,jdbcType=VARCHAR},
-        status = #{status,jdbcType=BIT},
-        user_desc = #{userDesc,jdbcType=VARCHAR},
-        invoice_info = #{invoiceInfo,jdbcType=VARCHAR},
-        engineer_id = #{engineerId,jdbcType=INTEGER},
-        engineer_desc = #{engineerDesc,jdbcType=VARCHAR},
-        pred_cost = #{predCost,jdbcType=DECIMAL},
-        real_cost = #{realCost,jdbcType=DECIMAL},
-        create_time = #{createTime,jdbcType=TIMESTAMP},
-        update_time = #{updateTime,jdbcType=TIMESTAMP}
-        where id = #{id,jdbcType=INTEGER}
-    </update>
 </mapper>

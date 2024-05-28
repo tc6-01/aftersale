@@ -20,6 +20,4 @@ public interface OrderMapper extends BaseMapper<Order> {
 
     Order selectByPayId(String payOrderId);
 
-    Integer updateByOrder(Order order);
-
 }
