@@ -2,15 +2,17 @@ package com.abc.aftersale.process.messageTask;
 
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.dto.UserDTO;
-import com.abc.aftersale.entity.File;
 import com.abc.aftersale.process.exception.processException;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication;
+import org.jvnet.hk2.annotations.Service;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
+@Component
 @EnableProcessApplication
 public class orderProcess {
     @Resource
@@ -26,7 +28,7 @@ public class orderProcess {
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("order", order);
         ProcessInstance processInstance = runtimeService.startProcessInstanceByMessage("Message_user_create",paraMap);
-        System.out.println(processInstance.toString());
+        System.out.println("=======================" + processInstance.toString());
         return processInstance.getProcessInstanceId();
     }
     /**
@@ -35,14 +37,14 @@ public class orderProcess {
      * @param pictures 用户上传故障图片
      * @desc 用户确认工单时，上传图片后，创建中间消息任务，通过发送消息直接触发（用户确认工单）
      */
-    public void processUserEnsure(List<File> pictures, OrderDTO orderDTO, String executionId){
+    public void processUserEnsure(List<byte[]> pictures, OrderDTO orderDTO){
         // 创建用于发送消息传递参数的Map
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("enSureOrder", orderDTO);
         paraMap.put("files", pictures);
         try{
             runtimeService.createMessageCorrelation("Message_user_ensure")
-                    .processInstanceId(executionId)
+                    .processInstanceId(orderDTO.getInstanceID())
                     .setVariables(paraMap).correlateWithResult();
         }catch (Exception e) {
             throw new processException("Message_user_ensure流程消息发送异常");
@@ -50,18 +52,17 @@ public class orderProcess {
     }
     /**
      * 触发消息任务---Message_engineer_take
-     * @param engineer 工程师对象
      * @param order 工程师接受的工单
      * @desc 在用户提交工单的工单基础上进一步获取更为详细的工单（上传相应工程师），中间消息任务，通过发送消息直接触发（工程师检测）
      */
-    public void processEngineerTake(UserDTO engineer, OrderDTO order, String executionId){
+    public void processEngineerTake( OrderDTO order){
         // 创建用于发送消息传递参数的Map
         HashMap<String, Object> paraMap = new HashMap<>();
-        paraMap.put("engineer", engineer);
+        paraMap.put("engineer", order.getEngineerId());
         paraMap.put("takingOrder", order);
         try{
             runtimeService.createMessageCorrelation("Message_engineer_take")
-                    .processInstanceId(executionId)
+                    .processInstanceId(order.getInstanceID())
                     .setVariables(paraMap).correlateWithResult();
         }catch (Exception e) {
             throw new processException("Message_engineer_take流程消息发送异常");
@@ -73,14 +74,14 @@ public class orderProcess {
      * @param order 工程师检测的工单
      * @desc 获取工程师检测工单，中间消息任务，通过发送消息直接触发（用户确认工单）
      */
-    public void processEngineerCheck(Boolean needMainTain, OrderDTO order, String executionId){
+    public void processEngineerCheck(Boolean needMainTain, OrderDTO order){
         // 创建用于发送消息传递参数的Map
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("need_main_tain", needMainTain);
         paraMap.put("checkingOrder", order);
         try{
             runtimeService.createMessageCorrelation("Message_engineer_check")
-                    .processInstanceId(executionId)
+                    .processInstanceId(order.getInstanceID())
                     .setVariables(paraMap).correlateWithResult();
         }catch (Exception e) {
             throw new processException("Message_engineer_check流程消息发送异常");
@@ -92,14 +93,14 @@ public class orderProcess {
      * @param order 工程师维修的工单
      * @desc 获取工程师维修工单，中间消息任务，通过发送消息直接触发（用户确认工单）
      */
-    public void processEngineerMainTain(Boolean needMaterial, OrderDTO order, String executionId){
+    public void processEngineerMainTain(Boolean needMaterial, OrderDTO order){
         // 创建用于发送消息传递参数的Map
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("need_material", needMaterial);
         paraMap.put("mainTainOrder", order);
         try{
             runtimeService.createMessageCorrelation("Message_engineer_maintain")
-                    .processInstanceId(executionId)
+                    .processInstanceId(order.getInstanceID())
                     .setVariables(paraMap).correlateWithResult();
         }catch (Exception e) {
             throw new processException("Message_engineer_maintain流程消息发送异常");
@@ -107,18 +108,16 @@ public class orderProcess {
     }
     /**
      * 触发消息任务---Message_engineer_selfCheck
-     * @param video 上传自检视频
      * @param order 工程师自检的工单
      * @desc 获取工程师自检工单，中间消息任务，通过发送消息直接触发（用户确认工单）
      */
-    public void processEngineerSelfCheck(File video, OrderDTO order, String executionId){
+    public void processEngineerSelfCheck(OrderDTO order){
         // 创建用于发送消息传递参数的Map
         HashMap<String, Object> paraMap = new HashMap<>();
-        paraMap.put("video", video);
         paraMap.put("selfCheckOrder", order);
         try{
             runtimeService.createMessageCorrelation("Message_engineer_selfCheck")
-                    .processInstanceId(executionId)
+                    .processInstanceId(order.getInstanceID())
                     .setVariables(paraMap).correlateWithResult();
         }catch (Exception e) {
             throw new processException("Message_engineer_selfCheck流程消息发送异常");
@@ -126,18 +125,16 @@ public class orderProcess {
     }
     /**
      * 触发消息任务---Message_pay_success
-     * @param payId 支付流水ID
      * @param order 处于用户待支付的工单
      * @desc 获取支付工单，中间消息任务，通过发送消息直接触发（用户确认工单）
      */
-    public void processEngineerPaySuccess(OrderDTO order, String payId, String executionId){
+    public void processEngineerPaySuccess(OrderDTO order){
         // 创建用于发送消息传递参数的Map
         HashMap<String, Object> paraMap = new HashMap<>();
-        paraMap.put("payId", payId);
         paraMap.put("returnOrder", order);
         try{
             runtimeService.createMessageCorrelation("Message_pay_success")
-                    .processInstanceId(executionId)
+                    .processInstanceId(order.getInstanceID())
                     .setVariables(paraMap).correlateWithResult();
         }catch (Exception e) {
             throw new processException("Message_pay_success流程消息发送异常");
@@ -148,13 +145,13 @@ public class orderProcess {
      * @param order 确认收货的工单
      * @desc 获取收货后的工单，中间消息任务，通过发送消息直接触发（用户确认工单）
      */
-    public void processEngineerEnsureReturn(OrderDTO order, String executionId){
+    public void processEngineerEnsureReturn(OrderDTO order){
         // 创建用于发送消息传递参数的Map
         HashMap<String, Object> paraMap = new HashMap<>();
         paraMap.put("returnEdOrder", order);
         try{
             runtimeService.createMessageCorrelation("Message_ensure_return")
-                    .processInstanceId(executionId)
+                    .processInstanceId(order.getInstanceID())
                     .setVariables(paraMap).correlateWithResult();
         }catch (Exception e) {
             throw new processException("Message_ensure_return流程消息发送异常");

@@ -11,6 +11,7 @@ import com.abc.aftersale.mapper.FileMapper;
 import com.abc.aftersale.mapper.InventoryMapper;
 import com.abc.aftersale.mapper.OrderMapper;
 import com.abc.aftersale.mapper.UserMapper;
+import com.abc.aftersale.process.messageTask.orderProcess;
 import com.abc.aftersale.service.InventoryService;
 import com.abc.aftersale.service.OrderService;
 import com.abc.aftersale.utils.DateUtil;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +87,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private Jedis jedis;
+    @Autowired
+    private orderProcess orderProcess;
 
     @Override
     public OrderDTO create(OrderDTO orderDTO) {
@@ -99,6 +103,8 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         BeanUtils.copyProperties(orderDTO, order);
         orderMapper.insert(order);
+        String instanceId = orderProcess.processUserCreate(orderDTO);
+        orderDTO.setInstanceID(instanceId);
         return orderDTO;
     }
 
@@ -249,6 +255,19 @@ public class OrderServiceImpl implements OrderService {
         return orderDTO;
     }
 
+    @Override
+    public int updateOrderDTO(OrderDTO source) {
+        if (Objects.isNull(source.getId())) {
+            throw new ServiceException("请输入工单号！");
+        }
+        Order dbOrder = orderMapper.selectById(source.getId());
+        if (dbOrder == null) {
+            throw new ServiceException("当前工单不存在！");
+        }
+        return orderMapper.updateByOrder(dbOrder);
+    }
+
+
     /**
      *
      * @param orderId
@@ -258,8 +277,8 @@ public class OrderServiceImpl implements OrderService {
      * 工单状态变更："用户已确认--2" ----> "工程师已接单--3"
      */
     @Override
-    public OrderDTO accept(Integer orderId, Integer engineerId) {
-
+    public OrderDTO accept(OrderDTO orderDTO, Integer engineerId) {
+        String orderId = orderDTO.getId().toString();
         long isExist = jedis.setnx(REDIS_KEY + orderId, "");
         if (isExist == 0) {
 
@@ -279,17 +298,17 @@ public class OrderServiceImpl implements OrderService {
                 dbOrder.setEngineerId(engineerId);
 
             orderMapper.updateById(dbOrder);
-            OrderDTO orderDTO = new OrderDTO();
+//            OrderDTO orderDTO = new OrderDTO();
             BeanUtils.copyProperties(dbOrder, orderDTO);
 
                 jedis.del(REDIS_KEY + orderId);
-
+                // 触发流程引擎工程师接单状态
+                orderProcess.processEngineerTake(orderDTO);
                 return orderDTO;
             }else{
                 jedis.del(REDIS_KEY + orderId);
                 throw new ServiceException("当前工单前置工作未确认，无法修改状态。");
             }
-
 
         } else {
             // 跳过
@@ -308,8 +327,8 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     @Override
-    public OrderDTO maintenance(Integer orderId, Integer engineerId, Boolean isFaulty, String desc) {
-        Order dbOrder = orderMapper.selectById(orderId);
+    public OrderDTO maintenance(OrderDTO orderDTO, Integer engineerId, Boolean isFaulty, String desc) {
+        Order dbOrder = orderMapper.selectById(orderDTO.getId());
         if (dbOrder == null) {
             throw new ServiceException("当前工单不存在！");
         }
@@ -322,9 +341,8 @@ public class OrderServiceImpl implements OrderService {
                 dbOrder.setEngineerDesc(desc);
 
                 orderMapper.updateById(dbOrder);
-                OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
-
+                orderProcess.processEngineerCheck(isFaulty, orderDTO);
                 return orderDTO;
             }else {
                 // 返还待确认
@@ -335,9 +353,7 @@ public class OrderServiceImpl implements OrderService {
                 dbOrder.setEngineerDesc(desc);
 
                 orderMapper.updateById(dbOrder);
-                OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
-
                 return orderDTO;
             }
         }else{
@@ -357,14 +373,15 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     @Override
-    public OrderDTO apply(Integer orderId, Integer engineerId, Boolean isInventory, InventoryDTO inventoryDTO) {
-        Order dbOrder = orderMapper.selectById(orderId);
+    public OrderDTO apply(OrderDTO orderDTO, Integer engineerId, Boolean isInventory, InventoryDTO inventoryDTO) {
+        Order dbOrder = orderMapper.selectById(orderDTO.getId());
         if (dbOrder == null) {
             throw new ServiceException("当前工单不存在！");
         }
         if (dbOrder.getStatus().equals(MAINTENANCE)){
             BigDecimal rate = new BigDecimal("1.2");
             BigDecimal engineerFee = new BigDecimal("50");
+            orderProcess.processEngineerMainTain(isInventory, orderDTO);
             if (isInventory){
                 // 申请物料
                 Inventory dbInventory = inventoryMapper.selectById(inventoryDTO.getId());
@@ -381,9 +398,7 @@ public class OrderServiceImpl implements OrderService {
                     BigDecimal predCost = (rate.multiply(dbInventory.getInventoryPrice())).add(engineerFee);
                     dbOrder.setPredCost(predCost);
                     orderMapper.updateById(dbOrder);
-                    OrderDTO orderDTO = new OrderDTO();
                     BeanUtils.copyProperties(dbOrder, orderDTO);
-
                     return orderDTO;
                 }
             }else{
@@ -391,7 +406,6 @@ public class OrderServiceImpl implements OrderService {
                 dbOrder.setStatus(REINSPECTION);
                 dbOrder.setPredCost(engineerFee);
                 orderMapper.updateById(dbOrder);
-                OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
 
                 return orderDTO;
@@ -437,6 +451,7 @@ public class OrderServiceImpl implements OrderService {
             dbOrder.setStatus(8);;
             orderMapper.updateById(dbOrder);
             BeanUtils.copyProperties(dbOrder, orderDTO);
+            orderProcess.processEngineerEnsureReturn(orderDTO);
             return orderDTO;
         } else {
             throw new ServiceException("只允许确认工程师已经返还的设备！");

@@ -65,7 +65,8 @@ public class payController {
     @AuthAccess
     @PostMapping("/notify")
     @ResponseBody
-    public String asyncNotify(@RequestBody String notifyData){
+    public String asyncNotify(@RequestParam("orderId") Integer orderId,
+                              @RequestParam("payType") String payType,  @RequestBody String notifyData){
         return payService.asyncNotify(notifyData);
 //        log.info("notifyData={}", notifyData);
     }
