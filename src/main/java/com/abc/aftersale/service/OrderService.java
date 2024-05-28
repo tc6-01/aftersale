@@ -26,5 +26,9 @@ public interface OrderService {
 
     OrderDTO apply(Integer orderId, Integer engineerId, Boolean isMaterial, InventoryDTO inventoryDTO);
 
+    OrderDTO orderReturn(Integer orderId, Integer engineerId);
+
+    OrderDTO confirmReceipt(OrderDTO orderDTO);
+
 //    OrderDTO costPush(Integer orderId, Integer engineerId, Boolean isMaterial, InventoryDTO inventoryDTO);
 }

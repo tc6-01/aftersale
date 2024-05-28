@@ -20,7 +20,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 
@@ -399,6 +398,48 @@ public class OrderServiceImpl implements OrderService {
             }
         }else{
             throw new ServiceException("当前工单未进行维修确认，申请物料失败。");
+        }
+    }
+
+    @Override
+    public OrderDTO orderReturn(Integer orderId, Integer engineerId) {
+        Order dbOrder = orderMapper.selectById(orderId);
+
+        if (dbOrder == null) {
+            throw new ServiceException("当前工单不存在！");
+        }
+
+
+        if (dbOrder.getStatus().equals(PAY)){
+            // 修改工单状态，添加工程师信息
+            dbOrder.setStatus(RETURNUSER);
+
+            orderMapper.updateById(dbOrder);
+            OrderDTO orderDTO = new OrderDTO();
+            BeanUtils.copyProperties(dbOrder, orderDTO);
+            return orderDTO;
+        }else{
+
+            throw new ServiceException("请对用户已支付费用的工单进行设备返还！");
+        }
+    }
+
+    @Override
+    public OrderDTO confirmReceipt(OrderDTO orderDTO) {
+        if (Objects.isNull(orderDTO.getId())) {
+            throw new ServiceException("请输入工单号！");
+        }
+        Order dbOrder = orderMapper.selectById(orderDTO.getId());
+        if (dbOrder == null) {
+            throw new ServiceException("当前工单不存在！");
+        }
+        if (dbOrder.getStatus().equals(RETURNUSER)) {
+            dbOrder.setStatus(8);;
+            orderMapper.updateById(dbOrder);
+            BeanUtils.copyProperties(dbOrder, orderDTO);
+            return orderDTO;
+        } else {
+            throw new ServiceException("只允许确认工程师已经返还的设备！");
         }
     }
 

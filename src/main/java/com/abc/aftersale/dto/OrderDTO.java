@@ -53,4 +53,6 @@ public class OrderDTO extends CommonQueryDTO implements Serializable {
     public String engineerName;
 
     public byte[] videoFile;
+
+    public Integer payStatus;
 }

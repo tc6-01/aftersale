@@ -23,7 +23,7 @@ import java.util.Map;
  */
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/pay")
 public class payController {
 
@@ -38,22 +38,23 @@ public class payController {
      */
     @AuthAccess
     @GetMapping("/create")
-    public ModelAndView create(@RequestParam("orderId") Integer orderId,
-                               @RequestParam("payType")BestPayTypeEnum bestPayTypeEnum){
-
-        PayResponse response = payService.create(orderId,bestPayTypeEnum);
+    public Result create(@RequestParam("orderId") Integer orderId,
+                               @RequestParam("payType") String payType){
 
         Map<String, String> map = new HashMap<>();
 
         // 支付方式不同，渲染不同
-        if (bestPayTypeEnum == BestPayTypeEnum.WXPAY_NATIVE){
-            map.put("codeUrl", response.getCodeUrl());
-            map.put("orderId", String.valueOf(orderId));
-            map.put("returnUrl", wxPayConfig.getReturnUrl());
-            return new ModelAndView("createForWxNative", map);
-        }else if (bestPayTypeEnum == BestPayTypeEnum.ALIPAY_PC){
-            map.put("body", response.getBody());
-            return new ModelAndView("createForAlipayPC", map);
+        if (payType.equals(BestPayTypeEnum.WXPAY_NATIVE.getCode())) {
+            PayResponse response = payService.create(orderId, BestPayTypeEnum.WXPAY_NATIVE);
+            // map.put("codeUrl", response.getCodeUrl());
+            // map.put("orderId", String.valueOf(orderId));
+            // map.put("returnUrl", wxPayConfig.getReturnUrl());
+            // return new ModelAndView("createForWxNative", map);
+            return Result.success(response);
+        }else if (payType.equals(BestPayTypeEnum.ALIPAY_PC)) {
+            PayResponse response = payService.create(orderId, BestPayTypeEnum.ALIPAY_PC);
+            // map.put("body", response.getBody());
+            return Result.success(response);
         }
         throw new ServiceException("暂不支持此支付方式！");
     }

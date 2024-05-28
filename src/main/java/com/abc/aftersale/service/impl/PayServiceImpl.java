@@ -61,9 +61,6 @@ public class PayServiceImpl implements PayService {
             throw new ServiceException("工程师未推送订单");
         }
 
-        BigDecimal amount = payOrder.getPredCost();
-
-        payOrder.setRealCost(amount);
         payOrder.setPayStatus(WAIT_PAY);
 
         // 生成订单id，由工单号+10位随机数得到
@@ -71,8 +68,8 @@ public class PayServiceImpl implements PayService {
         payOrder.setPayId(payOrderId);
 
         // 由于接入的是第三方商户，这里暂且将费用都设为0.01元，避免向商户支付过高的费用
-        payOrder.setPredCost(new BigDecimal("0.01"));
-        payOrder.setRealCost(new BigDecimal("0.01"));
+        BigDecimal amount = new BigDecimal(0.01);
+        payOrder.setRealCost(amount);
 
         orderMapper.updateById(payOrder);
 
@@ -111,6 +108,7 @@ public class PayServiceImpl implements PayService {
             }
             // 修改订单支付状态
             dbOrder.setPayStatus(PAID);
+            // dbOrder.setStatus(7);
             orderMapper.updateById(dbOrder);
         }
 
@@ -147,6 +145,7 @@ public class PayServiceImpl implements PayService {
         payDTO.setSnInfo(dbOrder.getSnInfo());
         payDTO.setPredCost(dbOrder.getPredCost());
         payDTO.setRealCost(dbOrder.getRealCost());
+        payDTO.setPayStatus(dbOrder.getPayStatus());
 
         return payDTO;
     }

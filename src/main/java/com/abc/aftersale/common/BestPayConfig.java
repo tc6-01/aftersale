@@ -36,7 +36,7 @@ public class BestPayConfig {
         aliPayConfig.setAliPayPublicKey(alipayAccountConfig.getPublicKey());
 
         // 使用内网穿透模拟外部ip，地址要加上/pay/notify
-        aliPayConfig.setNotifyUrl("http://4axd7r.natappfree.cc/pay/notify");
+        aliPayConfig.setNotifyUrl("https://4957afuy9122.vicp.fun//pay/notify");
         aliPayConfig.setReturnUrl("http://127.0.0.1");
 
         bestPayService.setAliPayConfig(aliPayConfig);

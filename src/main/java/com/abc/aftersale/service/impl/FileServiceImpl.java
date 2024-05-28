@@ -79,6 +79,7 @@ public class FileServiceImpl implements FileService {
             } else if (flag) {
                 dbOrder.setStatus(6);
                 // 补充消息推送功能
+                dbOrder.setPayStatus(1);
             }
             orderMapper.updateById(dbOrder);
             return uploadedFiles;

@@ -110,4 +110,16 @@ public class OrderController {
         return Result.success(dbFiles);
     }
 
+    @PutMapping("/return")
+    public Result orderReturn(@RequestParam("orderId") Integer orderId,
+                         @RequestParam("engineerId") Integer engineerId){
+        OrderDTO orderDTO = orderService.orderReturn(orderId, engineerId);
+        return Result.success(orderDTO);
+    }
+
+    @PostMapping("/confirmReceipt")
+    public Result confirmReceipt(@RequestBody OrderDTO orderDTO) {
+        orderDTO = orderService.confirmReceipt(orderDTO);
+        return Result.success(orderDTO);
+    }
 }

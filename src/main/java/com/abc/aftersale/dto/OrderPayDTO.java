@@ -31,4 +31,5 @@ public class OrderPayDTO extends CommonQueryDTO implements Serializable {
 
     public BigDecimal realCost;
 
+    public Integer payStatus;
 }
