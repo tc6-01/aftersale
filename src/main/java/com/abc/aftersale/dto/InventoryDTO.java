@@ -2,6 +2,7 @@ package com.abc.aftersale.dto;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -10,16 +11,18 @@ import java.util.Date;
  * @create 2024-05-22-16:37
  */
 @Data
-public class InventoryAddDTO {
+public class InventoryDTO extends CommonQueryDTO {
 
     private Integer id;
 
     private String inventoryName;
 
-    private String inventoryClass;
+    private Integer inventoryClass;
 
     private Integer inventoryNumber;
 
     private BigDecimal inventoryPrice;
+
+    private String inventoryClassName;
 
 }

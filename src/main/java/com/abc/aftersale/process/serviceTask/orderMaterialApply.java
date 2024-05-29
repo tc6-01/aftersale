@@ -1,6 +1,7 @@
 package com.abc.aftersale.process.serviceTask;
 
 import com.abc.aftersale.dto.OrderDTO;
+import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.service.OrderService;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
@@ -20,7 +21,7 @@ public class orderMaterialApply implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         // 获取用户创建工单输入
-        OrderDTO order = (OrderDTO) delegateExecution.getVariable("order");
+        Order order = (Order) delegateExecution.getVariable("order");
         // 物料申请接口 ， 需要相关返回值
 
         System.out.println("当前处于物料申请状态，工单详情：" + order.toString());

@@ -2,6 +2,7 @@ package com.abc.aftersale.mapper;
 
 import com.abc.aftersale.entity.Order;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.sun.org.apache.xpath.internal.operations.Or;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -18,21 +19,8 @@ import java.util.List;
 @Mapper
 public interface OrderMapper extends BaseMapper<Order> {
 
-    Order selectById(Integer id);
+    Order selectByPayId(String payOrderId);
 
-    // updateByPrimaryKey
-    int updateById(Order order);
-
-    int deleteByPrimaryKey(Integer id);
-
-    int insert(Order record);
-
-    int insertSelective(Order record);
-
-    Order selectByPrimaryKey(Integer id);
-
-    int updateByPrimaryKeySelective(Order record);
-
-    int updateByPrimaryKey(Order record);
+    Integer insertOrderWhenCreate(Order order);
 
 }

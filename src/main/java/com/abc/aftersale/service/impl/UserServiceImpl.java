@@ -84,8 +84,11 @@ public class UserServiceImpl implements UserService {
 
         User user = new User();
         BeanUtils.copyProperties(userDTO, user);
-        userMapper.insert(user);
-
+        try {
+            userMapper.insert(user);
+        } catch (Exception e){
+            throw new ServiceException("数据库插入失败，请联系开发人员");
+        }
         // 生成token
         dbUser = userMapper.searchByLoginName(userDTO.getLoginName());
         String token = TokenUtils.createToken(dbUser.getId().toString(), user.getPassword());

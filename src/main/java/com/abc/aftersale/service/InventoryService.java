@@ -1,8 +1,9 @@
 package com.abc.aftersale.service;
 
-import com.abc.aftersale.dto.InventoryAddDTO;
+import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.entity.Inventory;
-import com.abc.aftersale.entity.Order;
+
+import java.util.List;
 
 /**
  * @author zhaoranzhi
@@ -10,8 +11,9 @@ import com.abc.aftersale.entity.Order;
  */
 public interface InventoryService {
 
-    Inventory addInventory(Integer userId, InventoryAddDTO inventoryDTO);
+    Inventory addInventory(Integer userId, InventoryDTO inventoryDTO);
 
-    Inventory updateInventory(Integer userId, InventoryAddDTO inventoryDTO);
+    Inventory updateInventory(Integer userId, InventoryDTO inventoryDTO);
 
+    List<InventoryDTO> list(Integer userId, InventoryDTO inventoryDTO);
 }

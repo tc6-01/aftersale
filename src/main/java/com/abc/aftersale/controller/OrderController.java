@@ -1,17 +1,19 @@
 package com.abc.aftersale.controller;
 
 import com.abc.aftersale.common.Result;
-import com.abc.aftersale.dto.InventoryAddDTO;
+import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.entity.File;
 import com.abc.aftersale.exception.ServiceException;
-import com.abc.aftersale.service.EngineerService;
+import com.abc.aftersale.process.messageTask.OrderProcess;
 import com.abc.aftersale.service.impl.FileServiceImpl;
 import com.abc.aftersale.service.impl.OrderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,8 +31,8 @@ public class OrderController {
     @Autowired
     FileServiceImpl fileService;
 
-    @Autowired
-    EngineerService engineerService;
+    @Resource
+    private OrderProcess orderProcess;
 
     @PostMapping("/create")
     public Result create(@RequestBody OrderDTO orderDTO) {
@@ -51,12 +53,17 @@ public class OrderController {
     }
 
     @PostMapping("/confirm")
-    public Result confirm(@RequestParam("orderId") Integer orderId, @RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
+    public Result confirm(@RequestParam("orderId") Integer orderId, @RequestParam("files") MultipartFile[] files) {
+        if (files.length == 0) {
             throw new ServiceException("上传文件为空！");
         }
-        File dbFile = fileService.upload(file, orderId);
-        return Result.success(dbFile);
+        List<File> dbFiles = fileService.upload(files, orderId);
+        List<byte[]> pics = new ArrayList<>();
+        dbFiles.forEach(file ->{
+            pics.add(file.getFileData());
+        });
+        orderProcess.processUserEnsure(pics, orderId);
+        return Result.success(dbFiles);
     }
 
     @PostMapping("/processDetails")
@@ -69,10 +76,10 @@ public class OrderController {
      工程师修改工单状态
      工单状态变更："用户已确认--2" ----> "工程师已接单--3"
      */
-    @PutMapping("/update")
-    public Result update(@RequestParam("orderId") Integer orderId,
+    @PutMapping("/accept")
+    public Result accept(@RequestParam("orderId") Integer orderId,
                          @RequestParam("engineerId") Integer engineerId){
-        OrderDTO orderDTO = engineerService.update(orderId, engineerId);
+        OrderDTO orderDTO = orderService.accept(orderId, engineerId);
         return Result.success(orderDTO);
     }
 
@@ -87,8 +94,8 @@ public class OrderController {
     public Result maintenance(@RequestParam("orderId") Integer orderId,
                               @RequestParam("engineerId") Integer engineerId,
                               @RequestParam("isFaulty") Boolean isFaulty,
-                              @RequestParam("desc") String desc){
-        OrderDTO orderDTO = engineerService.maintenance(orderId, engineerId, isFaulty, desc);
+                              @RequestParam("engineerDesc") String engineerDesc){
+        OrderDTO orderDTO = orderService.maintenance(orderId, engineerId, isFaulty, engineerDesc);
         return Result.success(orderDTO);
     }
 
@@ -96,14 +103,37 @@ public class OrderController {
      物料申请：工程师针对有故障的设备，根据检测情况决定是否需要物料申请
      工单状态变更：'设备维修中--4"  ----> "人工复检中--5"
      */
-    @PutMapping("/materialApplication")
+    @PutMapping("/inventoryApplication")
     public Result materialApplication(@RequestParam("orderId") Integer orderId,
                                       @RequestParam("engineerId") Integer engineerId,
-                                      @RequestParam("isFaulty") Boolean isMaterial,
-                                      @RequestBody InventoryAddDTO inventoryAddDTO){
-        OrderDTO orderDTO = engineerService.apply(orderId, engineerId, isMaterial, inventoryAddDTO);
+                                      @RequestParam("isInventory") Boolean isInventory,
+                                      @RequestBody InventoryDTO inventoryDTO){
+        OrderDTO orderDTO = orderService.apply(orderId, engineerId, isInventory, inventoryDTO);
         return Result.success(orderDTO);
     }
 
+    @PostMapping("/recheck")
+    public Result recheck(@RequestParam("orderId") Integer orderId, @RequestParam("files") MultipartFile[] files) {
+        if (files.length == 0) {
+            throw new ServiceException("上传文件为空！");
+        }
+        List<File> dbFiles = fileService.upload(files, orderId);
+        List<byte[]> video = new ArrayList<>();
+        video.add(dbFiles.get(0).getFileData());
+        orderProcess.processEngineerSelfCheck(video, orderId);
+        return Result.success(dbFiles);
+    }
 
+    @PutMapping("/return")
+    public Result orderReturn(@RequestParam("orderId") Integer orderId,
+                         @RequestParam("engineerId") Integer engineerId){
+        OrderDTO orderDTO = orderService.orderReturn(orderId, engineerId);
+        return Result.success(orderDTO);
+    }
+
+    @PostMapping("/confirmReceipt")
+    public Result confirmReceipt(@RequestBody OrderDTO orderDTO) {
+        orderDTO = orderService.confirmReceipt(orderDTO);
+        return Result.success(orderDTO);
+    }
 }
