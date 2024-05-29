@@ -51,7 +51,7 @@ public class payController {
             // map.put("returnUrl", wxPayConfig.getReturnUrl());
             // return new ModelAndView("createForWxNative", map);
             return Result.success(response);
-        }else if (payType.equals(BestPayTypeEnum.ALIPAY_PC)) {
+        } else if (payType.equals(BestPayTypeEnum.ALIPAY_PC.getCode())) {
             PayResponse response = payService.create(orderId, BestPayTypeEnum.ALIPAY_PC);
             // map.put("body", response.getBody());
             return Result.success(response);
