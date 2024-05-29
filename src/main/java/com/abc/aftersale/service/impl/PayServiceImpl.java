@@ -5,6 +5,7 @@ import com.abc.aftersale.dto.OrderPayDTO;
 import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.exception.ServiceException;
 import com.abc.aftersale.mapper.OrderMapper;
+import com.abc.aftersale.process.messageTask.OrderProcess;
 import com.abc.aftersale.service.PayService;
 import com.abc.aftersale.utils.MichatIdGenerator;
 import com.lly835.bestpay.config.WxPayConfig;
@@ -14,11 +15,13 @@ import com.lly835.bestpay.model.PayRequest;
 import com.lly835.bestpay.model.PayResponse;
 import com.lly835.bestpay.service.BestPayService;
 import com.lly835.bestpay.service.impl.BestPayServiceImpl;
+import jdk.nashorn.internal.ir.annotations.Reference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 
 /**
@@ -37,6 +40,9 @@ public class PayServiceImpl implements PayService {
 
     @Autowired
     MichatIdGenerator michatIdGenerator;
+    
+    @Resource
+    private OrderProcess orderProcess;
 
     // 支付状态：0-未创建；1-已创建；2-待支付；3-已支付；
     private final Integer NOT_CREATED = 0;
@@ -111,7 +117,7 @@ public class PayServiceImpl implements PayService {
             // dbOrder.setStatus(7);
             orderMapper.updateById(dbOrder);
         }
-
+        orderProcess.processEngineerPaySuccess(dbOrder);
 
         if (response.getPayPlatformEnum() == BestPayPlatformEnum.WX){
             // 通知微信

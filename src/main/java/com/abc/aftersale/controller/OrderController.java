@@ -5,12 +5,15 @@ import com.abc.aftersale.dto.InventoryDTO;
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.entity.File;
 import com.abc.aftersale.exception.ServiceException;
+import com.abc.aftersale.process.messageTask.OrderProcess;
 import com.abc.aftersale.service.impl.FileServiceImpl;
 import com.abc.aftersale.service.impl.OrderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,6 +30,9 @@ public class OrderController {
 
     @Autowired
     FileServiceImpl fileService;
+
+    @Resource
+    private OrderProcess orderProcess;
 
     @PostMapping("/create")
     public Result create(@RequestBody OrderDTO orderDTO) {
@@ -52,6 +58,11 @@ public class OrderController {
             throw new ServiceException("上传文件为空！");
         }
         List<File> dbFiles = fileService.upload(files, orderId);
+        List<byte[]> pics = new ArrayList<>();
+        dbFiles.forEach(file ->{
+            pics.add(file.getFileData());
+        });
+        orderProcess.processUserEnsure(pics, orderId);
         return Result.success(dbFiles);
     }
 
@@ -107,6 +118,9 @@ public class OrderController {
             throw new ServiceException("上传文件为空！");
         }
         List<File> dbFiles = fileService.upload(files, orderId);
+        List<byte[]> video = new ArrayList<>();
+        video.add(dbFiles.get(0).getFileData());
+        orderProcess.processEngineerSelfCheck(video, orderId);
         return Result.success(dbFiles);
     }
 

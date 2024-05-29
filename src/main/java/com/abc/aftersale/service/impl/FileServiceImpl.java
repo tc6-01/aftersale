@@ -49,7 +49,7 @@ public class FileServiceImpl implements FileService {
                 throw new ServiceException("请选择正确状态的订单进行操作！");
             }
             for (MultipartFile file : files) {
-                if (file.getContentType().equals("image/png")) {
+                if (file.getContentType().equals("image/png") || file.getContentType().equals("image/jpeg")) {
                     File dbFile = new File();
                     dbFile.setFileName(file.getOriginalFilename());
                     byte[] compressedImage = fileUtils.compressAndEncryptImage(file.getBytes());
@@ -70,7 +70,10 @@ public class FileServiceImpl implements FileService {
                     dbFile.setFileType(1);
                     dbFile.setCreateTime(dateUtil.getCurrentTimestamp());
                     dbFile.setUpdateTime(dateUtil.getCurrentTimestamp());
-                    fileMapper.insert(dbFile);
+                    int i = fileMapper.insert(dbFile);
+                    if (i != 1) {
+                        throw new ServiceException("数据库插入失败，请联系开发人员！");
+                    }
                     uploadedFiles.add(dbFile);
                 }
             }
