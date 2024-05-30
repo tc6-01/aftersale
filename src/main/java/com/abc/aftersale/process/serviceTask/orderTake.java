@@ -3,6 +3,7 @@ package com.abc.aftersale.process.serviceTask;
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.dto.UserDTO;
 import com.abc.aftersale.entity.File;
+import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.service.OrderService;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
@@ -24,13 +25,7 @@ public class orderTake implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         // 获取流程变量
-        OrderDTO order = (OrderDTO) delegateExecution.getVariable("takingOrder");
-        UserDTO engineer = (UserDTO) delegateExecution.getVariable("engineer");
-        // 更新关联工程师
-        order.setEngineerId(engineer.getId());
-        order.setEngineerDesc(engineer.getName());
-        delegateExecution.setVariable("order",order);
-        // 更新工单（传入数据库）
-//        orderService.create(order);
+        Order order = (Order) delegateExecution.getVariable("takingOrder");
+        System.out.println("=======================工程师成功认领工单" + order.toString());
     }
 }

@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.abc.aftersale.mapper.OrderMapper">
+<!--    public Integer userId;
+    public String userName;
+    public String userPhone;
+    public String userAddress;
+    public String productInfo;
+    public String snInfo
+    public Integer status;
+    public String userDesc;
+    public String invoiceInfo;
+    public Integer engineerId;
+    public String engineerDesc;
+    public BigDecimal predCost;
+    public BigDecimal realCost;
+    public Integer payStatus;
+    public String payId;
+    public String instanceId;
+    public Timestamp createTime;
+
+    public Timestamp updateTime;-->
+    <insert id="insertOrderWhenCreate" parameterType="com.abc.aftersale.entity.Order" useGeneratedKeys="true" keyProperty="id">
+        insert into `order`
+        (user_id, user_name, user_phone, user_address, product_info, sn_info, status, user_desc,invoice_info)
+        values (#{userId}, #{userName}, #{userPhone}, #{userAddress}, #{productInfo}, #{snInfo}, #{status}, #{userDesc}, #{invoiceInfo})
+    </insert>
 
     <select id="selectByPayId" resultType="com.abc.aftersale.entity.Order">
         select *

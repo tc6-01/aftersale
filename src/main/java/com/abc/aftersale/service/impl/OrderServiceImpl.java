@@ -11,6 +11,7 @@ import com.abc.aftersale.mapper.FileMapper;
 import com.abc.aftersale.mapper.InventoryMapper;
 import com.abc.aftersale.mapper.OrderMapper;
 import com.abc.aftersale.mapper.UserMapper;
+import com.abc.aftersale.process.messageTask.OrderProcess;
 import com.abc.aftersale.service.InventoryService;
 import com.abc.aftersale.service.OrderService;
 import com.abc.aftersale.utils.DateUtil;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +87,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private Jedis jedis;
+    @Resource
+    private OrderProcess orderProcess;
 
     @Override
     public OrderDTO create(OrderDTO orderDTO) {
@@ -98,7 +102,8 @@ public class OrderServiceImpl implements OrderService {
         orderDTO.setUpdateTime(dateUtil.getCurrentTimestamp());
         Order order = new Order();
         BeanUtils.copyProperties(orderDTO, order);
-        orderMapper.insert(order);
+        orderMapper.insertOrderWhenCreate(order);
+        orderProcess.processUserCreate(order);
         return orderDTO;
     }
 
@@ -277,13 +282,12 @@ public class OrderServiceImpl implements OrderService {
                 // 修改工单状态，添加工程师信息
                 dbOrder.setStatus(CLAIM);
                 dbOrder.setEngineerId(engineerId);
-
-            orderMapper.updateById(dbOrder);
-            OrderDTO orderDTO = new OrderDTO();
-            BeanUtils.copyProperties(dbOrder, orderDTO);
+                orderProcess.processEngineerTake(dbOrder);
+                orderMapper.updateById(dbOrder);
+                OrderDTO orderDTO = new OrderDTO();
+                BeanUtils.copyProperties(dbOrder, orderDTO);
 
                 jedis.del(REDIS_KEY + orderId);
-
                 return orderDTO;
             }else{
                 jedis.del(REDIS_KEY + orderId);
@@ -322,6 +326,7 @@ public class OrderServiceImpl implements OrderService {
                 dbOrder.setEngineerDesc(desc);
 
                 orderMapper.updateById(dbOrder);
+                orderProcess.processEngineerCheck(true, dbOrder);
                 OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
 
@@ -335,6 +340,7 @@ public class OrderServiceImpl implements OrderService {
                 dbOrder.setEngineerDesc(desc);
 
                 orderMapper.updateById(dbOrder);
+                orderProcess.processEngineerCheck(false, dbOrder);
                 OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
 
@@ -381,6 +387,7 @@ public class OrderServiceImpl implements OrderService {
                     BigDecimal predCost = (rate.multiply(dbInventory.getInventoryPrice())).add(engineerFee);
                     dbOrder.setPredCost(predCost);
                     orderMapper.updateById(dbOrder);
+                    orderProcess.processEngineerMainTain(true, dbOrder);
                     OrderDTO orderDTO = new OrderDTO();
                     BeanUtils.copyProperties(dbOrder, orderDTO);
 
@@ -391,6 +398,7 @@ public class OrderServiceImpl implements OrderService {
                 dbOrder.setStatus(REINSPECTION);
                 dbOrder.setPredCost(engineerFee);
                 orderMapper.updateById(dbOrder);
+                orderProcess.processEngineerMainTain(false, dbOrder);
                 OrderDTO orderDTO = new OrderDTO();
                 BeanUtils.copyProperties(dbOrder, orderDTO);
 
@@ -436,6 +444,7 @@ public class OrderServiceImpl implements OrderService {
         if (dbOrder.getStatus().equals(RETURNUSER)) {
             dbOrder.setStatus(8);;
             orderMapper.updateById(dbOrder);
+            orderProcess.processEngineerEnsureReturn(dbOrder);
             BeanUtils.copyProperties(dbOrder, orderDTO);
             return orderDTO;
         } else {

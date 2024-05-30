@@ -2,6 +2,7 @@ package com.abc.aftersale.mapper;
 
 import com.abc.aftersale.entity.Order;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.sun.org.apache.xpath.internal.operations.Or;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -19,5 +20,7 @@ import java.util.List;
 public interface OrderMapper extends BaseMapper<Order> {
 
     Order selectByPayId(String payOrderId);
+
+    Integer insertOrderWhenCreate(Order order);
 
 }

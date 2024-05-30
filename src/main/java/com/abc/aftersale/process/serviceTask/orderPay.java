@@ -2,6 +2,7 @@ package com.abc.aftersale.process.serviceTask;
 
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.entity.File;
+import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.service.OrderService;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
@@ -21,7 +22,7 @@ public class orderPay implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         // 获取流程变量
-        OrderDTO order = (OrderDTO) delegateExecution.getVariable("returnOrder");
+        Order order = (Order) delegateExecution.getVariable("returnOrder");
         String payId = (String) delegateExecution.getVariable("payId");
         // 更新order中的自检视频字段
         // 更新流程变量order

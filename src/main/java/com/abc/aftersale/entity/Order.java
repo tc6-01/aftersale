@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -20,7 +21,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @TableName("`order`")
-public class Order {
+public class Order implements Serializable {
     @TableId(type = IdType.AUTO)
     public Integer id;
 
@@ -53,6 +54,8 @@ public class Order {
     public Integer payStatus;
 
     public String payId;
+
+    public String instanceId;
 
     public Timestamp createTime;
 
