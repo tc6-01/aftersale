@@ -36,7 +36,6 @@ public class payController {
     /**
      * 创建支付
      */
-    @AuthAccess
     @GetMapping("/create")
     public Result create(@RequestParam("orderId") Integer orderId,
                                @RequestParam("payType") String payType){
@@ -62,7 +61,6 @@ public class payController {
     /**
      * 异步处理
      */
-    @AuthAccess
     @PostMapping("/notify")
     @ResponseBody
     public String asyncNotify(@RequestBody String notifyData){
@@ -77,5 +75,16 @@ public class payController {
     @ResponseBody
     public OrderPayDTO queryByOrderId(@RequestParam Integer orderId){
         return payService.queryByOrderId(orderId);
+    }
+
+    /**
+     * 重置工单支付状态（用于将支付超时的工单重置为工单已推送状态）
+     * @param orderId
+     * @return
+     */
+    @GetMapping("reset")
+    @ResponseBody
+    public OrderPayDTO reset(@RequestParam Integer orderId){
+        return payService.reset(orderId);
     }
 }

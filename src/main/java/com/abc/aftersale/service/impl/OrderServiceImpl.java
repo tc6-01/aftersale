@@ -265,8 +265,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDTO accept(Integer orderId, Integer engineerId) {
 
-        long isExist = jedis.setnx(REDIS_KEY + orderId, "");
-        if (isExist == 0) {
+        long notExist = jedis.setnx(REDIS_KEY + orderId, "");
+        if (notExist == 1) {
 
             jedis.expire(REDIS_KEY + orderId, REDIS_EXPIRE);
 
