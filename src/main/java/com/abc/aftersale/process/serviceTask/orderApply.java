@@ -22,10 +22,7 @@ public class orderApply implements JavaDelegate {
     @Override
     public void execute(DelegateExecution delegateExecution) throws Exception {
         // 获取用户创建工单输入
-        OrderDTO order = (OrderDTO) delegateExecution.getVariable("order");
-        if (order == null || order.getUserId() == null || order.getSnInfo() == null) {
-            throw new processException("用户提交工单为空");
-        }
+        Order order = (Order) delegateExecution.getVariable("order");
         System.out.println("========================当前处于工单待创建状态，工单详情：" + order.toString());
         // 创建流程变量方便后续进行流程查询
         delegateExecution.setVariable("userId", order.getUserId());

@@ -32,4 +32,6 @@ public interface PayService {
      * @return
      */
     OrderPayDTO queryByOrderId(Integer orderId);
+
+    OrderPayDTO reset(Integer orderId);
 }

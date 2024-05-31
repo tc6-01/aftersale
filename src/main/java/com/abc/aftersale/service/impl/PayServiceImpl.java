@@ -155,4 +155,24 @@ public class PayServiceImpl implements PayService {
 
         return payDTO;
     }
+
+    @Override
+    public OrderPayDTO reset(Integer orderId) {
+        Order dbOrder = orderMapper.selectById(orderId);
+        dbOrder.setPayStatus(CREATED);
+        dbOrder.setPayId(null);
+        orderMapper.updateById(dbOrder);
+        OrderPayDTO payDTO = new OrderPayDTO();
+        payDTO.setId(dbOrder.getId());
+        payDTO.setUserId(dbOrder.getUserId());
+        payDTO.setUserName(dbOrder.getUserName());
+        payDTO.setUserPhone(dbOrder.getUserPhone());
+        payDTO.setUserAddress(dbOrder.getUserAddress());
+        payDTO.setProductInfo(dbOrder.getProductInfo());
+        payDTO.setSnInfo(dbOrder.getSnInfo());
+        payDTO.setPredCost(dbOrder.getPredCost());
+        payDTO.setRealCost(dbOrder.getRealCost());
+        payDTO.setPayStatus(dbOrder.getPayStatus());
+        return payDTO;
+    }
 }
