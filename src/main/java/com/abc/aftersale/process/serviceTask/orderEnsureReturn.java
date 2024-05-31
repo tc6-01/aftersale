@@ -1,8 +1,10 @@
 package com.abc.aftersale.process.serviceTask;
 
+import cn.hutool.log.Log;
 import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.service.OrderService;
+import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.jvnet.hk2.annotations.Service;
@@ -13,6 +15,7 @@ import javax.annotation.Resource;
  * 工单复检状态自动调用系统任务
  * 接收工程师上传自检视频，更新工单
  */
+@Slf4j
 @Service
 public class orderEnsureReturn implements JavaDelegate {
 
@@ -24,6 +27,6 @@ public class orderEnsureReturn implements JavaDelegate {
         Order order = (Order) delegateExecution.getVariable("returnEdOrder");
         // 更新流程变量order
         delegateExecution.setVariable("order", order);
-        System.out.println("===============当前处于用户确认工单返回状态，工单详情：" + order.toString());
+        log.info("===============当前处于用户确认工单返回状态，工单详情：" + order.toString());
     }
 }
