@@ -72,7 +72,7 @@ public class FileServiceImpl implements FileService {
                     dbFile.setUpdateTime(dateUtil.getCurrentTimestamp());
                     int i = fileMapper.insert(dbFile);
                     if (i != 1) {
-                        throw new ServiceException("数据库插入失败，请联系开发人员！");
+                        throw new ServiceException("文件上传失败，请联系开发人员！");
                     }
                     uploadedFiles.add(dbFile);
                 }

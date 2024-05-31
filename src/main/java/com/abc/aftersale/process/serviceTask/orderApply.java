@@ -4,6 +4,7 @@ import com.abc.aftersale.dto.OrderDTO;
 import com.abc.aftersale.entity.Order;
 import com.abc.aftersale.service.OrderService;
 import com.sun.org.apache.xpath.internal.operations.Or;
+import lombok.extern.slf4j.Slf4j;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.engine.delegate.JavaDelegate;
 import org.jvnet.hk2.annotations.Service;
@@ -14,6 +15,7 @@ import javax.annotation.Resource;
  * 工单申请状态自动调用系统任务
  * 获取用户工单输入，(不直接插入，等待后续用户确认后插入）
  */
+@Slf4j
 @Service
 public class orderApply implements JavaDelegate {
 
@@ -23,7 +25,7 @@ public class orderApply implements JavaDelegate {
     public void execute(DelegateExecution delegateExecution) throws Exception {
         // 获取用户创建工单输入
         Order order = (Order) delegateExecution.getVariable("order");
-        System.out.println("========================当前处于工单待创建状态，工单详情：" + order.toString());
+        log.info("========================当前处于工单待创建状态，工单详情：" + order.toString());
         // 创建流程变量方便后续进行流程查询
         delegateExecution.setVariable("userId", order.getUserId());
         delegateExecution.setVariable("SN", order.getSnInfo());
